@@ -62,8 +62,6 @@ public class SwerveSubsystem extends SubsystemBase{
     SwerveDriveOdometry odometry;
     public Pose2d OdometryOutPose;
 
-    public Transform2d OdometryOffset = new Transform2d();
-
     // -- END OF ODOMETRY SHIT--
 
     public SwerveSubsystem() {
@@ -184,7 +182,7 @@ public class SwerveSubsystem extends SubsystemBase{
         SmartDashboard.putString("Odom Localized", ("x: " + OdometryOutPose.getX() + ", y: " + OdometryOutPose.getY()));
 
         SmartDashboard.putNumber("Gyro angle", gyroAngle.getDegrees());
-        odometryDisplay.setRobotPose(new Pose2d(OdometryOutPose.getX(), OdometryOutPose.getY() + 5.548, gyroAngle));
+        odometryDisplay.setRobotPose(new Pose2d(OdometryOutPose.getX(), OdometryOutPose.getY(), gyroAngle));
     }
 
     void Odometry() {

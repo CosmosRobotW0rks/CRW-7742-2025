@@ -48,6 +48,9 @@ public class SwerveJoystickDriveCommand extends Command {
             rotspeed = ApplyDeadzone(rotspeed, dz_rot);
         }
         Translation3d t3d = new Translation3d(xspeed, yspeed, rotspeed);
+
+        // TODO: Make it move faster than 1 m/s
+        System.out.printf("X: %f / Y: %f / Rot: %f\n", xspeed, yspeed, rotspeed);
         swerve.SetDriveTR(t3d);
     }
 
