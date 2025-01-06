@@ -51,7 +51,7 @@ public class SwerveJoystickDriveCommand extends Command {
 
         // TODO: Make it move faster than 1 m/s
         System.out.printf("X: %f / Y: %f / Rot: %f\n", xspeed, yspeed, rotspeed);
-        swerve.SetDriveTR(t3d);
+        swerve.FromJoystick(xspeed, yspeed, rotspeed);
     }
 
     @Override
