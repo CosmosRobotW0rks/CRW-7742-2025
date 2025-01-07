@@ -9,8 +9,11 @@ public final class Constants {
 
     public static class DriveConstants {
         
-        public static final double MaxAccel_X = 15;
-        public static final double MaxAccel_Y = 15; 
+        public static final double MaxDriveSpeed = 5.0; // m/s
+        public static final double MaxDriveAccel = 15.0; // m/s^2
+
+        public static final double MaxRotSpeed = Math.PI * 2; // rad/s
+        public static final double MaxRotAccel = Math.PI * 2 * 3; // rad/s^2
 
         public static final double JOYDeadzone_X = 0.1;
         public static final double JOYDeadzone_Y = 0.1;
