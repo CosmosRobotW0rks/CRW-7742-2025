@@ -8,6 +8,7 @@ import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -17,6 +18,9 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -28,13 +32,18 @@ import frc.robot.Constants.SwerveConstants;
 
 public class SwerveSubsystem extends SubsystemBase{
 
-    final double WIDTH = 11.2; // Inches? TODO Add dimensions
-    final double HEIGHT = 10.5;
+    // WIDTH: 11.5" / HEIGHT: 10.5"
+    
+    final double WIDTH = 0.28448; // meters
+    final double HEIGHT = 0.2667; // meters
 
     SwerveModule FL = new SwerveModule(Constants.SwerveConstants.AngleCANID_FL, Constants.SwerveConstants.DriveCANID_FL);
     SwerveModule FR = new SwerveModule(Constants.SwerveConstants.AngleCANID_FR, Constants.SwerveConstants.DriveCANID_FR);
     SwerveModule BL = new SwerveModule(Constants.SwerveConstants.AngleCANID_BL, Constants.SwerveConstants.DriveCANID_BL);
     SwerveModule BR = new SwerveModule(Constants.SwerveConstants.AngleCANID_BR, Constants.SwerveConstants.DriveCANID_BR);
+
+    StructArrayPublisher<SwerveModuleState> swerveStatePublisher = NetworkTableInstance.getDefault().getStructArrayTopic("SwerveStates", SwerveModuleState.struct).publish();
+    StructPublisher<Pose2d> posePublisher = NetworkTableInstance.getDefault().getStructTopic("ChassisPose", Pose2d.struct).publish();
 
     public AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
     private Rotation2d gyroAngle = Rotation2d.fromDegrees(0);
@@ -59,6 +68,7 @@ public class SwerveSubsystem extends SubsystemBase{
         odometryDisplay.setRobotPose(new Pose2d(new Translation2d(), new Rotation2d()));
 
         SmartDashboard.putData("Field", odometryDisplay);
+
     }
 
     @Override
@@ -98,7 +108,11 @@ public class SwerveSubsystem extends SubsystemBase{
     }
 
     public void DriveFieldOriented(double x, double y, double rot) {
-        chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(x, y, rot, gyroAngle);
+        SetChassisSpeeds(ChassisSpeeds.fromFieldRelativeSpeeds(x, y, rot, gyroAngle));
+
+        SmartDashboard.putNumber("FO Input X", x);
+        SmartDashboard.putNumber("FO Input Y", y);
+        SmartDashboard.putNumber("FO Input Rot", rot);
     }
 
 
@@ -112,6 +126,10 @@ public class SwerveSubsystem extends SubsystemBase{
 
     void Drive() {
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(chassisSpeeds);
+        swerveStatePublisher.set(states);
+
+        SmartDashboard.putNumber("MODULE_SPEED", states[0].speedMetersPerSecond);
+        SmartDashboard.putNumber("MODULE_ANGLE", states[0].angle.getDegrees());
 
         odometry.update(gyroAngle, positions);
 
@@ -119,6 +137,7 @@ public class SwerveSubsystem extends SubsystemBase{
         FR.Drive(states[1].speedMetersPerSecond);
         BL.Drive(states[2].speedMetersPerSecond);
         BR.Drive(states[3].speedMetersPerSecond);
+        
 
         if (Math.abs(chassisSpeeds.vxMetersPerSecond) + Math.abs(chassisSpeeds.vyMetersPerSecond) + Math.abs(chassisSpeeds.omegaRadiansPerSecond) < 1e-4)
             return;
@@ -127,6 +146,7 @@ public class SwerveSubsystem extends SubsystemBase{
         FR.SetTargetAngle(states[1].angle.getDegrees());
         BL.SetTargetAngle(states[2].angle.getDegrees());
         BR.SetTargetAngle(states[3].angle.getDegrees());
+
     }
 
     void UpdateModules() {
@@ -154,6 +174,7 @@ public class SwerveSubsystem extends SubsystemBase{
         OdometryOutPose = new Pose2d(
                 new Translation2d(OdometryOutPose.getTranslation().getX(), OdometryOutPose.getTranslation().getY()),
                 OdometryOutPose.getRotation());
+        posePublisher.set(OdometryOutPose);
     }
 
     public Rotation2d GetGyroAngle() {
