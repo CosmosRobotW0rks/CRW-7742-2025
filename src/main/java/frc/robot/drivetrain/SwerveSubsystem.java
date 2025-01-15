@@ -34,37 +34,98 @@ import frc.robot.Constants.SwerveConstants;
 
 public class SwerveSubsystem extends SubsystemBase {
 
-    OldSwerveModule module = new OldSwerveModule(4, 6);
+    public AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
 
+    SwerveModule[] modules = new SwerveModule[] {
+        new SwerveModule(Constants.SwerveConstants.AngleCANID_FL, Constants.SwerveConstants.DriveCANID_FL),
+        new SwerveModule(Constants.SwerveConstants.AngleCANID_FR, Constants.SwerveConstants.DriveCANID_FR),
+        new SwerveModule(Constants.SwerveConstants.AngleCANID_BL, Constants.SwerveConstants.DriveCANID_BL),
+        new SwerveModule(Constants.SwerveConstants.AngleCANID_BR, Constants.SwerveConstants.DriveCANID_BR)
+    };
 
-    double speed = 0;
+    SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
+            new Translation2d(Constants.SwerveConstants.ModuleOffsetM_X, Constants.SwerveConstants.ModuleOffsetM_Y),
+            new Translation2d(Constants.SwerveConstants.ModuleOffsetM_X, -Constants.SwerveConstants.ModuleOffsetM_Y),
+            new Translation2d(-Constants.SwerveConstants.ModuleOffsetM_X, Constants.SwerveConstants.ModuleOffsetM_Y),
+            new Translation2d(-Constants.SwerveConstants.ModuleOffsetM_X, -Constants.SwerveConstants.ModuleOffsetM_Y));
+
+    ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0, 0, 0);
+
+    SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, GetRobotHeading(), GetModulePositions());
 
     public SwerveSubsystem()
     {
         
     }
 
-    public void SetAngle(double deg)
+    void ApplyChassisSpeeds(ChassisSpeeds speeds)
     {
-        System.out.printf("Deg: %f\n", deg);
-        module.SetTargetAngle(deg);
+        SwerveModuleState[] moduleStates = kinematics.toSwerveModuleStates(speeds);
+
+        for (int i = 0; i < moduleStates.length; i++)
+        {
+            SwerveModuleState state = moduleStates[i];
+            SwerveModule module = modules[i];
+
+            state.optimize(module.GetAngle());
+
+            state.speedMetersPerSecond *= state.angle.minus(module.GetAngle()).getCos(); // cosine compensation
+
+            module.SetTargetState(state);
+        }
     }
 
-    public void SetSpeed(double ms)
+    void UpdateOdometry()
     {
-        System.out.printf("Speed: %f\n", ms);
-        module.SetSpeed(ms);
+        odometry.update(GetRobotHeading(), GetModulePositions());
     }
 
-    public void IncreaseSpeed(double delta)
+    public void SetChassisSpeeds(ChassisSpeeds speeds)
     {
-        speed += delta;
-        SetSpeed(speed);
+        chassisSpeeds = speeds;
     }
+
+
+    public void SetFieldOrientedChassisSpeeds(double xSpeed, double ySpeed, double rotSpeed)
+    {
+        Rotation2d heading = GetRobotHeading();
+        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rotSpeed, heading);
+        chassisSpeeds = speeds;
+    }
+
+    public Rotation2d GetRobotHeading() {
+        return Rotation2d.fromDegrees(-gyro.getFusedHeading());
+    }
+
+    public SwerveModuleState[] GetModuleStates()
+    {
+        SwerveModuleState[] states = new SwerveModuleState[modules.length];
+        for (int i = 0; i < modules.length; i++)
+        {
+            states[i] = modules[i].GetState();
+        }
+        return states;
+    }
+
+    public SwerveModulePosition[] GetModulePositions()
+    {
+        SwerveModulePosition[] positions = new SwerveModulePosition[modules.length];
+        for (int i = 0; i < modules.length; i++)
+        {
+            positions[i] = modules[i].GetPosition();
+        }
+        return positions;
+    }
+
+    public Pose2d GetRobotPose()
+    {
+        return odometry.getPoseMeters();
+    }
+
 
     @Override
     public void periodic() {
-        
-        module.Update(0.02);
+        ApplyChassisSpeeds(chassisSpeeds);
+        UpdateOdometry();
     }
 }

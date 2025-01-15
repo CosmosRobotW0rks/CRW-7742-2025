@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.drivetrain.OldSwerveSubsystem;
+import frc.robot.drivetrain.SwerveSubsystem;
 import frc.robot.drivetrain.commands.SwerveJoystickDriveCommand;
 import frc.robot.util.Elastic;
 import frc.robot.util.Elastic.Notification;
@@ -17,14 +17,14 @@ import frc.robot.util.Elastic.Notification.NotificationLevel;
 public class RobotContainer {
   private final CommandXboxController controller = new CommandXboxController(0);
 
-  private final OldSwerveSubsystem swerve = new OldSwerveSubsystem();
+  private final SwerveSubsystem swerve = new SwerveSubsystem();
 
   public RobotContainer() {
     configureBindings();
   }
 
   private void configureBindings() {
-    
+    /* 
     swerve.setDefaultCommand(new SwerveJoystickDriveCommand(
       swerve,
       () -> controller.getHID().getLeftX(),
@@ -32,7 +32,7 @@ public class RobotContainer {
       () -> controller.getHID().getRightX(), 
       true
     ));
-
+*/
     
   }
 
