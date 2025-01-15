@@ -32,14 +32,14 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveConstants;
 
-public class SwerveTestSubsystem extends SubsystemBase {
+public class SwerveSubsystem extends SubsystemBase {
 
-    SwerveModule module = new SwerveModule(4, 6);
+    OldSwerveModule module = new OldSwerveModule(4, 6);
 
 
     double speed = 0;
 
-    public SwerveTestSubsystem()
+    public SwerveSubsystem()
     {
         
     }

@@ -20,7 +20,7 @@ import frc.robot.Constants.SwerveConstants;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-public class SwerveModule {
+public class OldSwerveModule {
 
     private SparkMax angleSpark;
     private SparkMax driveSpark;
@@ -38,7 +38,7 @@ public class SwerveModule {
     boolean inverted;
     double targetAngleAbsolute;
 
-    public SwerveModule(int AngleCANID, int DriveCANID) {
+    public OldSwerveModule(int AngleCANID, int DriveCANID) {
         
         angleSpark = new SparkMax(AngleCANID, MotorType.kBrushless);
         driveSpark = new SparkMax(DriveCANID, MotorType.kBrushless);

@@ -30,17 +30,17 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveConstants;
 
-public class SwerveSubsystem extends SubsystemBase{
+public class OldSwerveSubsystem extends SubsystemBase{
 
     // WIDTH: 11.5" / HEIGHT: 10.5"
     
     final double WIDTH = 0.28448; // meters
     final double HEIGHT = 0.2667; // meters
 
-    SwerveModule FL = new SwerveModule(Constants.SwerveConstants.AngleCANID_FL, Constants.SwerveConstants.DriveCANID_FL);
-    SwerveModule FR = new SwerveModule(Constants.SwerveConstants.AngleCANID_FR, Constants.SwerveConstants.DriveCANID_FR);
-    SwerveModule BL = new SwerveModule(Constants.SwerveConstants.AngleCANID_BL, Constants.SwerveConstants.DriveCANID_BL);
-    SwerveModule BR = new SwerveModule(Constants.SwerveConstants.AngleCANID_BR, Constants.SwerveConstants.DriveCANID_BR);
+    OldSwerveModule FL = new OldSwerveModule(Constants.SwerveConstants.AngleCANID_FL, Constants.SwerveConstants.DriveCANID_FL);
+    OldSwerveModule FR = new OldSwerveModule(Constants.SwerveConstants.AngleCANID_FR, Constants.SwerveConstants.DriveCANID_FR);
+    OldSwerveModule BL = new OldSwerveModule(Constants.SwerveConstants.AngleCANID_BL, Constants.SwerveConstants.DriveCANID_BL);
+    OldSwerveModule BR = new OldSwerveModule(Constants.SwerveConstants.AngleCANID_BR, Constants.SwerveConstants.DriveCANID_BR);
 
     StructArrayPublisher<SwerveModuleState> swerveStatePublisher = NetworkTableInstance.getDefault().getStructArrayTopic("SwerveStates", SwerveModuleState.struct).publish();
     StructPublisher<Pose2d> posePublisher = NetworkTableInstance.getDefault().getStructTopic("ChassisPose", Pose2d.struct).publish();
@@ -60,7 +60,7 @@ public class SwerveSubsystem extends SubsystemBase{
 
     double lastJoystickUpdateTimestamp = 0;
 
-    public SwerveSubsystem() {
+    public OldSwerveSubsystem() {
 
         UpdateModules();
 
