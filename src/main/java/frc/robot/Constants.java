@@ -9,7 +9,7 @@ public final class Constants {
 
     public static class DriveConstants {
         
-        public static final double MaxDriveSpeed = 5.0; // m/s
+        public static final double MaxDriveSpeed = 1.0; // m/s
         public static final double MaxDriveAccel = 15.0; // m/s^2
 
         public static final double MaxRotSpeed = Math.PI * 2; // rad/s
@@ -26,11 +26,11 @@ public final class Constants {
         public static final double GearRatio_Angle = 18;
         public static final double SpeedCalibValue = 0.33 / 2.0;
 
-        public static final double AnglePID_P = 0.01; 
+        public static final double AnglePID_P = 0.4; 
         public static final double AnglePID_I = 0; 
-        public static final double AnglePID_D = 0.2; 
+        public static final double AnglePID_D = 0; 
 
-        public static final double DrivePID_P = 0.01; 
+        public static final double DrivePID_P = 0.001; 
         public static final double DrivePID_I = 0; 
         public static final double DrivePID_D = 0;
 
