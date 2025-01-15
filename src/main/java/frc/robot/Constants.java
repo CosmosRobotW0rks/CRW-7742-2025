@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
+
 public final class Constants {
 
 
@@ -24,15 +27,17 @@ public final class Constants {
     public static class SwerveConstants {
 
         public static final double GearRatio_Angle = 18;
-        public static final double SpeedCalibValue = 0.33 / 2.0;
+        public static final double GearRatio_Drive = 18;
+        public static final double WheelRadiusMM = 80;
 
         public static final double AnglePID_P = 0.4; 
         public static final double AnglePID_I = 0; 
         public static final double AnglePID_D = 0; 
 
-        public static final double DrivePID_P = 0.001; 
-        public static final double DrivePID_I = 0; 
-        public static final double DrivePID_D = 0;
+        public static final double DrivePIDF_P = 0.00025; 
+        public static final double DrivePIDF_I = 0; 
+        public static final double DrivePIDF_D = 0.0002;
+        public static final double DrivePIDF_F = 0.000218; 
 
 
 
@@ -47,6 +52,12 @@ public final class Constants {
 
         public static final int AngleCANID_BR = 1;
         public static final int DriveCANID_BR = 3;
+
+
+
+
+        // OLD
+        public static final double SpeedCalibValue = 0.33 / 2.0;
 
 
     }
