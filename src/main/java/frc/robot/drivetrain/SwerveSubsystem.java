@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.Inches;
 
 import java.io.Serial;
 
+import com.ctre.phoenix6.controls.MotionMagicExpoDutyCycle;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -21,85 +23,96 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveConstants;
 
-public class SwerveSubsystem extends SubsystemBase{
+public class SwerveSubsystem extends SubsystemBase {
 
-    // WIDTH: 11.5" / HEIGHT: 10.5"
+    XboxController joy;
     
-    final double WIDTH = 0.28448; // meters
-    final double HEIGHT = 0.2667; // meters
-
-    SwerveModule FL = new SwerveModule(Constants.SwerveConstants.AngleCANID_FL, Constants.SwerveConstants.DriveCANID_FL);
-    SwerveModule FR = new SwerveModule(Constants.SwerveConstants.AngleCANID_FR, Constants.SwerveConstants.DriveCANID_FR);
-    SwerveModule BL = new SwerveModule(Constants.SwerveConstants.AngleCANID_BL, Constants.SwerveConstants.DriveCANID_BL);
-    SwerveModule BR = new SwerveModule(Constants.SwerveConstants.AngleCANID_BR, Constants.SwerveConstants.DriveCANID_BR);
-
     StructArrayPublisher<SwerveModuleState> swerveStatePublisher = NetworkTableInstance.getDefault().getStructArrayTopic("SwerveStates", SwerveModuleState.struct).publish();
     StructPublisher<Pose2d> posePublisher = NetworkTableInstance.getDefault().getStructTopic("ChassisPose", Pose2d.struct).publish();
+    Field2d odomDisplay = new Field2d();
 
     public AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
-    private Rotation2d gyroAngle = Rotation2d.fromDegrees(0);
 
-    Field2d odometryDisplay = new Field2d();
+    SwerveModule[] modules = new SwerveModule[] {
+        new SwerveModule(Constants.SwerveConstants.AngleCANID_FL, Constants.SwerveConstants.DriveCANID_FL),
+        new SwerveModule(Constants.SwerveConstants.AngleCANID_FR, Constants.SwerveConstants.DriveCANID_FR),
+        new SwerveModule(Constants.SwerveConstants.AngleCANID_BL, Constants.SwerveConstants.DriveCANID_BL),
+        new SwerveModule(Constants.SwerveConstants.AngleCANID_BR, Constants.SwerveConstants.DriveCANID_BR)
+    };
+
+    SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
+            new Translation2d(Constants.SwerveConstants.ModuleOffsetM_X, Constants.SwerveConstants.ModuleOffsetM_Y),
+            new Translation2d(Constants.SwerveConstants.ModuleOffsetM_X, -Constants.SwerveConstants.ModuleOffsetM_Y),
+            new Translation2d(-Constants.SwerveConstants.ModuleOffsetM_X, Constants.SwerveConstants.ModuleOffsetM_Y),
+            new Translation2d(-Constants.SwerveConstants.ModuleOffsetM_X, -Constants.SwerveConstants.ModuleOffsetM_Y));
 
     ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0, 0, 0);
 
-    SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
-            new Translation2d(WIDTH, HEIGHT),
-            new Translation2d(WIDTH, -HEIGHT),
-            new Translation2d(-WIDTH, HEIGHT),
-            new Translation2d(-WIDTH, -HEIGHT));
+    SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, GetRobotHeading(), GetModulePositions());
 
-    double lastJoystickUpdateTimestamp = 0;
-
-    public SwerveSubsystem() {
-
-        UpdateModules();
-
-        odometry = new SwerveDriveOdometry(kinematics, gyroAngle, positions);
-        odometryDisplay.setRobotPose(new Pose2d(new Translation2d(), new Rotation2d()));
-
-        SmartDashboard.putData("Field", odometryDisplay);
-
-    }
-
-    @Override
-    public void periodic() {
-
-        gyroAngle = GetGyroAngle();
-
-        UpdateModules();
-        UpdateOdometry();
-        Drive();
-        Display();
-    }
-
-    // Basic Control
-
-    public void SetTargetAbsolute(double fl, double fr, double bl, double br, boolean forceForward) {
-        FL.SetTargetAngle(fl, forceForward);
-        FR.SetTargetAngle(fr, forceForward);
-        BL.SetTargetAngle(bl, forceForward);
-        BR.SetTargetAngle(br, forceForward);
-    }
-
-    public void SetTargetAbsolute(double tl, double tr, double bl, double br) {
-        SetTargetAbsolute(tl, tr, bl, br, false);
-    }
-
-
-
-    public void SetChassisSpeeds(ChassisSpeeds cs)
+    public SwerveSubsystem(XboxController joy)
     {
-        chassisSpeeds = cs;
+        this.joy = joy;   
+        
+        SmartDashboard.putData("Field", odomDisplay);
+    }
+
+    boolean fieldOriented = true;
+
+    void JoyTest()
+    {
+        if(joy.getXButtonPressed()) fieldOriented = !fieldOriented;
+        SmartDashboard.putBoolean("Field Oriented", fieldOriented);
+
+        double x = joy.getLeftX() * Constants.DriveConstants.MaxDriveSpeed;
+        double y = -joy.getLeftY() * Constants.DriveConstants.MaxDriveSpeed;
+        double rot = joy.getRightX() * Constants.DriveConstants.MaxRotSpeed;
+        
+        if(fieldOriented) SetFieldOrientedChassisSpeeds(x, y, rot);
+
+        else SetChassisSpeeds(new ChassisSpeeds(x,y,rot));
+    }
+
+    void ApplyChassisSpeeds(ChassisSpeeds speeds)
+    {
+        SwerveModuleState[] moduleStates = kinematics.toSwerveModuleStates(speeds);
+
+        for (int i = 0; i < moduleStates.length; i++)
+        {
+            SwerveModuleState state = moduleStates[i];
+            SwerveModule module = modules[i];
+
+            state.optimize(module.GetAngle());
+
+            state.speedMetersPerSecond *= state.angle.minus(module.GetAngle()).getCos(); // cosine compensation
+
+            module.SetTargetState(state);
+        }
+    }
+
+    void UpdateOdometry()
+    {
+        Pose2d robotPose = odometry.update(GetRobotHeading(), GetModulePositions());
+        odomDisplay.setRobotPose(robotPose);
+        
+    }
+
+    public void SetChassisSpeeds(ChassisSpeeds speeds)
+    {
+        chassisSpeeds = speeds;
     }
 
     public ChassisSpeeds GetChassisSpeeds()
@@ -107,89 +120,53 @@ public class SwerveSubsystem extends SubsystemBase{
         return chassisSpeeds;
     }
 
-    public void DriveFieldOriented(double x, double y, double rot) {
-        SetChassisSpeeds(ChassisSpeeds.fromFieldRelativeSpeeds(x, y, rot, gyroAngle));
 
-        SmartDashboard.putNumber("FO Input X", x);
-        SmartDashboard.putNumber("FO Input Y", y);
-        SmartDashboard.putNumber("FO Input Rot", rot);
+    public void SetFieldOrientedChassisSpeeds(double xSpeed, double ySpeed, double rotSpeed)
+    {
+        Rotation2d heading = GetRobotHeading();
+        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rotSpeed, heading);
+        chassisSpeeds = speeds;
+    }
+
+    public Rotation2d GetRobotHeading() {
+        return Rotation2d.fromDegrees(360.0-gyro.getFusedHeading());
+    }
+
+    public SwerveModuleState[] GetModuleStates()
+    {
+        SwerveModuleState[] states = new SwerveModuleState[modules.length];
+        for (int i = 0; i < modules.length; i++)
+        {
+            states[i] = modules[i].GetState();
+        }
+        return states;
+    }
+
+    public SwerveModulePosition[] GetModulePositions()
+    {
+        SwerveModulePosition[] positions = new SwerveModulePosition[modules.length];
+        for (int i = 0; i < modules.length; i++)
+        {
+            positions[i] = modules[i].GetPosition();
+        }
+        return positions;
+    }
+
+    public Pose2d GetRobotPose()
+    {
+        return odometry.getPoseMeters();
     }
 
 
-    // DRIVE & ODOMETRY
+    @Override
+    public void periodic() {
+        JoyTest();
+        ApplyChassisSpeeds(chassisSpeeds);
+        UpdateOdometry();
 
-    SwerveModulePosition[] positions = new SwerveModulePosition[4];
-    SwerveModuleState[] states = new SwerveModuleState[4];
-    SwerveDriveOdometry odometry;
-    Pose2d OdometryOutPose;
-
-
-    void Drive() {
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(chassisSpeeds);
-        swerveStatePublisher.set(states);
-
-        SmartDashboard.putNumber("MODULE_SPEED", states[0].speedMetersPerSecond);
-        SmartDashboard.putNumber("MODULE_ANGLE", states[0].angle.getDegrees());
-
-        odometry.update(gyroAngle, positions);
-
-        FL.Drive(states[0].speedMetersPerSecond);
-        FR.Drive(states[1].speedMetersPerSecond);
-        BL.Drive(states[2].speedMetersPerSecond);
-        BR.Drive(states[3].speedMetersPerSecond);
-        
-
-        if (Math.abs(chassisSpeeds.vxMetersPerSecond) + Math.abs(chassisSpeeds.vyMetersPerSecond) + Math.abs(chassisSpeeds.omegaRadiansPerSecond) < 1e-4)
-            return;
-
-        FL.SetTargetAngle(states[0].angle.getDegrees());
-        FR.SetTargetAngle(states[1].angle.getDegrees());
-        BL.SetTargetAngle(states[2].angle.getDegrees());
-        BR.SetTargetAngle(states[3].angle.getDegrees());
+        swerveStatePublisher.set(GetModuleStates());
+        posePublisher.set(GetRobotPose());
+        SmartDashboard.putNumber("RobotHeading", GetRobotHeading().getDegrees());
 
     }
-
-    void UpdateModules() {
-        FL.Update(0.02);
-        FR.Update(0.02);
-        BL.Update(0.02);
-        BR.Update(0.02);
-
-        positions[0] = FL.GetPosition();
-        positions[1] = FR.GetPosition();
-        positions[2] = BL.GetPosition();
-        positions[3] = BR.GetPosition();
-
-        states[0] = FL.GetState();
-        states[1] = FR.GetState();
-        states[2] = BL.GetState();
-        states[3] = BR.GetState();
-    }
-
-
-    void UpdateOdometry() {
-        Rotation2d gyroAngle = GetGyroAngle();
-        odometry.update(gyroAngle, positions);
-        OdometryOutPose = odometry.getPoseMeters();
-        OdometryOutPose = new Pose2d(
-                new Translation2d(OdometryOutPose.getTranslation().getX(), OdometryOutPose.getTranslation().getY()),
-                OdometryOutPose.getRotation());
-        posePublisher.set(OdometryOutPose);
-    }
-
-    public Rotation2d GetGyroAngle() {
-        return Rotation2d.fromDegrees(-gyro.getFusedHeading());
-    }
-
-
-    // DISPLAY
-
-    void Display() {
-        SmartDashboard.putString("Odom Localized", ("x: " + OdometryOutPose.getX() + ", y: " + OdometryOutPose.getY()));
-
-        SmartDashboard.putNumber("Gyro angle", gyroAngle.getDegrees());
-        odometryDisplay.setRobotPose(new Pose2d(OdometryOutPose.getX(), OdometryOutPose.getY(), gyroAngle));
-    }
-
-
 }

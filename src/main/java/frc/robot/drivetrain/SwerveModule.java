@@ -1,24 +1,30 @@
 package frc.robot.drivetrain;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotation;
+
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Unit;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
-import frc.robot.Constants;
 import frc.robot.Constants.SwerveConstants;
-
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 public class SwerveModule {
 
@@ -31,144 +37,79 @@ public class SwerveModule {
     private SparkClosedLoopController angleController;
     private SparkClosedLoopController driveController;
 
-    double distanceDriven;
-
-    Time lastUpdateTime;
-
-    boolean inverted;
-    double targetAngleAbsolute;
-
     public SwerveModule(int AngleCANID, int DriveCANID) {
-        
+
         angleSpark = new SparkMax(AngleCANID, MotorType.kBrushless);
         driveSpark = new SparkMax(DriveCANID, MotorType.kBrushless);
-        
+
         SparkMaxConfig angleConfig = new SparkMaxConfig();
         SparkMaxConfig driveConfig = new SparkMaxConfig();
 
-        double angleConvFactor = 2.0 * Math.PI / SwerveConstants.GearRatio_Angle;
-
-        angleConfig.closedLoop.pid(SwerveConstants.AnglePID_P, SwerveConstants.AnglePID_I, SwerveConstants.AnglePID_D);
-        angleConfig.closedLoop.outputRange(-0.5,0.5);
-        angleConfig.idleMode(IdleMode.kBrake);
-
-        angleConfig.encoder.positionConversionFactor(angleConvFactor);
+        double anglePCF = (2.0 * Math.PI) / SwerveConstants.GearRatio_Angle; // Output: rad
 
 
-            
+        double drivePCF = 1 / (SwerveConstants.GearRatio_Drive / (SwerveConstants.WheelDiameterM * Math.PI)); // Output: m
 
 
-        driveConfig.closedLoop.pid(SwerveConstants.DrivePID_P, SwerveConstants.DrivePID_I, SwerveConstants.DrivePID_D);
+        double driveVCF = drivePCF / 60; // Output: m/s
+
+        SmartDashboard.putNumber("Drive PCF", drivePCF);
+        SmartDashboard.putNumber("Drive VCF", driveVCF);
+        SmartDashboard.putNumber("Angle PCF", anglePCF);
+
+        angleConfig.idleMode(IdleMode.kCoast);
         driveConfig.idleMode(IdleMode.kCoast);
 
-        angleSpark.configure(angleConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
-        driveSpark.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        angleConfig.closedLoop.pid(SwerveConstants.AnglePID_P, SwerveConstants.AnglePID_I, SwerveConstants.AnglePID_D);
+        driveConfig.closedLoop.pidf(SwerveConstants.DrivePIDF_P, SwerveConstants.DrivePIDF_I,
+                SwerveConstants.DrivePIDF_D, SwerveConstants.DrivePIDF_FF);
 
+        angleConfig.closedLoop.outputRange(-0.5, 0.5);
 
+        angleConfig.encoder.positionConversionFactor(anglePCF);
+        driveConfig.encoder.positionConversionFactor(drivePCF);
+        driveConfig.encoder.velocityConversionFactor(driveVCF);
 
-
+        angleSpark.configure(angleConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        driveSpark.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         angleEncoder = angleSpark.getEncoder();
         driveEncoder = driveSpark.getEncoder();
         angleController = angleSpark.getClosedLoopController();
         driveController = driveSpark.getClosedLoopController();
-
-        
     }
 
-
-    public double GetAngle() // Radians
-    {
-        return angleEncoder.getPosition();
+    public double GetDistanceM() {
+        return driveEncoder.getPosition();
     }
 
-    public double GetShortestRouteToAngle(double currentAngle, double targetAngle)
-    {
-
-        double currentAngle_clamped = currentAngle % (2.0 * Math.PI);
-        currentAngle_clamped += currentAngle_clamped < 0 ? 2.0 * Math.PI : 0;
-
-        double nt = targetAngle + currentAngle - currentAngle_clamped;
-
-        if (targetAngle - currentAngle_clamped > Math.PI)
-            nt -= 2.0 * Math.PI;
-
-        if (targetAngle - currentAngle_clamped < -Math.PI)
-            nt += 2.0 * Math.PI;
-
-        return nt;
+    public Rotation2d GetAngle() {
+        return Rotation2d.fromRadians(angleEncoder.getPosition());
     }
 
-    public void Drive(double speed) 
-    {
-        double remainingAngleDistance = angleEncoder.getPosition() * targetAngleAbsolute;
-
-        double speedToApply = speed * remainingAngleDistance;
-        
-        SetSpeed(speedToApply);
+    public double GetSpeedMPS() {
+        return driveEncoder.getVelocity();
     }
 
-    public void SetTargetAngle(double angDeg, boolean forceForward)
-    {
-        double currentAngle = GetAngle();
-
-        double currentAngle_clamped = currentAngle % (2.0 * Math.PI);
-        currentAngle_clamped += currentAngle_clamped < 0 ? 2.0 * Math.PI : 0;
-
-        double angle = Math.toRadians(angDeg);
-
-        double target1 = GetShortestRouteToAngle(currentAngle, angle);
-        double target2 = GetShortestRouteToAngle(currentAngle, angle > Math.PI ? angle - Math.PI : angle + Math.PI);
-
-        double route1Diff = Math.abs(target1 - currentAngle);
-        double route2Diff = Math.abs(target2 - currentAngle);
-        
-
-        if(!forceForward && route1Diff > route2Diff)
-        {
-            inverted = false;
-            targetAngleAbsolute = target2;
-        }
-        else
-        {
-            inverted = true;
-            targetAngleAbsolute = target1;
-        }
-
-        angleController.setReference(targetAngleAbsolute, ControlType.kPosition);
-
-    }
-    
-    public void SetTargetAngle(double angleDegrees)
-    {
-        SetTargetAngle(angleDegrees, false);
+    public void SetTargetAngle(Rotation2d angle) {
+        angleController.setReference(angle.getRadians(), ControlType.kPosition);
     }
 
-    public double GetSpeed() // unit m/s
-    {
-        double rpm = driveEncoder.getVelocity();
-
-        return rpm / 250.0 / SwerveConstants.SpeedCalibValue;
+    public void SetTargetSpeedMPS(double speed) {
+        driveController.setReference(speed, ControlType.kVelocity);
     }
 
-    void SetSpeed(double speed)
-    {
-        driveController.setReference(speed * 250.0 * SwerveConstants.SpeedCalibValue * (inverted ? -1 : 1), ControlType.kVelocity);
-    }
-
-    public void Update(double deltaTimeSeconds)
-    {
-        distanceDriven += GetSpeed() * deltaTimeSeconds;
+    public SwerveModuleState GetState() {
+        return new SwerveModuleState(GetSpeedMPS(), GetAngle());
     }
 
     public SwerveModulePosition GetPosition()
     {
-        return new SwerveModulePosition(distanceDriven, Rotation2d.fromRadians(GetAngle()));
+        return new SwerveModulePosition(Meters.of(GetDistanceM()), GetAngle());
     }
 
-    public SwerveModuleState GetState()
-    {
-        return new SwerveModuleState(GetSpeed(), Rotation2d.fromRadians(GetAngle()));
+    public void SetTargetState(SwerveModuleState state) {
+        SetTargetSpeedMPS(state.speedMetersPerSecond);
+        SetTargetAngle(state.angle);
     }
-
 }

@@ -81,7 +81,7 @@ public class SwerveJoystickDriveCommand extends Command {
         targetRotspeed = GetAccelLimitedSpeed(chassisSpeeds.omegaRadiansPerSecond, targetRotspeed, delta, DriveConstants.MaxRotAccel);
 
 
-        swerve.DriveFieldOriented(targetXspeed, targetYspeed, targetRotspeed);
+        swerve.SetFieldOrientedChassisSpeeds(targetXspeed, targetYspeed, targetRotspeed);
     }
 
     

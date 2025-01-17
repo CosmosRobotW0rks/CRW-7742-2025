@@ -4,15 +4,20 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meters;
+
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
+
 public final class Constants {
 
 
     public static class DriveConstants {
         
-        public static final double MaxDriveSpeed = 1.0; // m/s
+        public static final double MaxDriveSpeed = 0.5; // m/s
         public static final double MaxDriveAccel = 15.0; // m/s^2
 
-        public static final double MaxRotSpeed = Math.PI * 2; // rad/s
+        public static final double MaxRotSpeed = Math.PI * 0.5; // rad/s
         public static final double MaxRotAccel = Math.PI * 2 * 3; // rad/s^2
 
         public static final double JOYDeadzone_X = 0.1;
@@ -23,16 +28,21 @@ public final class Constants {
 
     public static class SwerveConstants {
 
+        public static final double ModuleOffsetM_X = 0.28;
+        public static final double ModuleOffsetM_Y = 0.28;
+
         public static final double GearRatio_Angle = 18;
-        public static final double SpeedCalibValue = 0.33 / 2.0;
+        public static final double GearRatio_Drive = 8.31;
+        public static final double WheelDiameterM = Units.inchesToMeters(4);
 
-        public static final double AnglePID_P = 0.4; 
+        public static final double AnglePID_P = 0.5; 
         public static final double AnglePID_I = 0; 
-        public static final double AnglePID_D = 0; 
+        public static final double AnglePID_D = 0.2; 
 
-        public static final double DrivePID_P = 0.001; 
-        public static final double DrivePID_I = 0; 
-        public static final double DrivePID_D = 0;
+        public static final double DrivePIDF_P = 0.25; 
+        public static final double DrivePIDF_I = 0; 
+        public static final double DrivePIDF_D = 0;
+        public static final double DrivePIDF_FF = 0.3; 
 
 
 
@@ -47,6 +57,12 @@ public final class Constants {
 
         public static final int AngleCANID_BR = 1;
         public static final int DriveCANID_BR = 3;
+
+
+
+
+        // OLD
+        public static final double SpeedCalibValue = 0.33 / 2.0;
 
 
     }
