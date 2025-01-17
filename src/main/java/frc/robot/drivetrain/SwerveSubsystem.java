@@ -23,16 +23,26 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveConstants;
 
 public class SwerveSubsystem extends SubsystemBase {
+
+    XboxController joy;
+    
+    StructArrayPublisher<SwerveModuleState> swerveStatePublisher = NetworkTableInstance.getDefault().getStructArrayTopic("SwerveStates", SwerveModuleState.struct).publish();
+    StructPublisher<Pose2d> posePublisher = NetworkTableInstance.getDefault().getStructTopic("ChassisPose", Pose2d.struct).publish();
+    Field2d odomDisplay = new Field2d();
 
     public AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
 
@@ -53,9 +63,27 @@ public class SwerveSubsystem extends SubsystemBase {
 
     SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, GetRobotHeading(), GetModulePositions());
 
-    public SwerveSubsystem()
+    public SwerveSubsystem(XboxController joy)
     {
+        this.joy = joy;   
         
+        SmartDashboard.putData("Field", odomDisplay);
+    }
+
+    boolean fieldOriented = true;
+
+    void JoyTest()
+    {
+        if(joy.getXButtonPressed()) fieldOriented = !fieldOriented;
+        SmartDashboard.putBoolean("Field Oriented", fieldOriented);
+
+        double x = joy.getLeftX() * Constants.DriveConstants.MaxDriveSpeed;
+        double y = -joy.getLeftY() * Constants.DriveConstants.MaxDriveSpeed;
+        double rot = joy.getRightX() * Constants.DriveConstants.MaxRotSpeed;
+        
+        if(fieldOriented) SetFieldOrientedChassisSpeeds(x, y, rot);
+
+        else SetChassisSpeeds(new ChassisSpeeds(x,y,rot));
     }
 
     void ApplyChassisSpeeds(ChassisSpeeds speeds)
@@ -77,7 +105,9 @@ public class SwerveSubsystem extends SubsystemBase {
 
     void UpdateOdometry()
     {
-        odometry.update(GetRobotHeading(), GetModulePositions());
+        Pose2d robotPose = odometry.update(GetRobotHeading(), GetModulePositions());
+        odomDisplay.setRobotPose(robotPose);
+        
     }
 
     public void SetChassisSpeeds(ChassisSpeeds speeds)
@@ -94,7 +124,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public Rotation2d GetRobotHeading() {
-        return Rotation2d.fromDegrees(-gyro.getFusedHeading());
+        return Rotation2d.fromDegrees(360.0-gyro.getFusedHeading());
     }
 
     public SwerveModuleState[] GetModuleStates()
@@ -125,7 +155,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        JoyTest();
         ApplyChassisSpeeds(chassisSpeeds);
         UpdateOdometry();
+
+        swerveStatePublisher.set(GetModuleStates());
+        posePublisher.set(GetRobotPose());
+        SmartDashboard.putNumber("RobotHeading", GetRobotHeading().getDegrees());
+
     }
 }

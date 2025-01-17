@@ -19,6 +19,8 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
 
@@ -43,9 +45,17 @@ public class SwerveModule {
         SparkMaxConfig angleConfig = new SparkMaxConfig();
         SparkMaxConfig driveConfig = new SparkMaxConfig();
 
-        double anglePCF = 2.0 * Math.PI / SwerveConstants.GearRatio_Angle; // Output: rad
-        double drivePCF = SwerveConstants.GearRatio_Drive / SwerveConstants.WheelDiameterM * Math.PI; // Output: m
-        double driveVCF = 60 * drivePCF; // Output: m/s
+        double anglePCF = (2.0 * Math.PI) / SwerveConstants.GearRatio_Angle; // Output: rad
+
+
+        double drivePCF = 1 / (SwerveConstants.GearRatio_Drive / (SwerveConstants.WheelDiameterM * Math.PI)); // Output: m
+
+
+        double driveVCF = drivePCF / 60; // Output: m/s
+
+        SmartDashboard.putNumber("Drive PCF", drivePCF);
+        SmartDashboard.putNumber("Drive VCF", driveVCF);
+        SmartDashboard.putNumber("Angle PCF", anglePCF);
 
         angleConfig.idleMode(IdleMode.kCoast);
         driveConfig.idleMode(IdleMode.kCoast);
@@ -60,8 +70,8 @@ public class SwerveModule {
         driveConfig.encoder.positionConversionFactor(drivePCF);
         driveConfig.encoder.velocityConversionFactor(driveVCF);
 
-        angleSpark.configure(angleConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
-        driveSpark.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        angleSpark.configure(angleConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        driveSpark.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         angleEncoder = angleSpark.getEncoder();
         driveEncoder = driveSpark.getEncoder();
