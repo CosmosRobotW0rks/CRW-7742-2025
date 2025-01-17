@@ -3,6 +3,12 @@ package frc.robot.drivetrain;
 import static edu.wpi.first.units.Units.Inches;
 
 import java.io.Serial;
+import java.util.List;
+import java.util.Optional;
+
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import com.ctre.phoenix6.controls.MotionMagicExpoDutyCycle;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
@@ -63,6 +69,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
     SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, GetRobotHeading(), GetModulePositions());
 
+    VisionPoseEstimator poseEstimator = new VisionPoseEstimator("AACAM");
+
     public SwerveSubsystem(XboxController joy)
     {
         this.joy = joy;   
@@ -107,7 +115,28 @@ public class SwerveSubsystem extends SubsystemBase {
     {
         Pose2d robotPose = odometry.update(GetRobotHeading(), GetModulePositions());
         odomDisplay.setRobotPose(robotPose);
-        
+    }
+
+    void ResetOdometryWithVision()
+    {
+        Optional<EstimatedRobotPose> optPose = poseEstimator.GetEstimatedPose();
+
+        if(optPose == null || !optPose.isPresent()) return;
+
+        EstimatedRobotPose estimatedPose = optPose.get();
+
+        Pose3d pose3d = estimatedPose.estimatedPose;
+
+        SmartDashboard.putNumber("EstimatedPose X", pose3d.getX());
+        SmartDashboard.putNumber("EstimatedPose Y", pose3d.getY());
+        SmartDashboard.putNumber("EstimatedPose Z", pose3d.getZ());
+
+        estimatedPose.estimatedPose.getX();
+
+        Pose2d pose = new Pose2d(pose3d.getX(), pose3d.getY(), new Rotation2d(pose3d.getRotation().getX(), pose3d.getRotation().getY()));
+        // Is the pose correct? TODO: Check Pose3D to Pose2D conversion
+
+        odometry.resetPose(pose);
     }
 
     public void SetChassisSpeeds(ChassisSpeeds speeds)
@@ -160,6 +189,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        ResetOdometryWithVision();
         JoyTest();
         ApplyChassisSpeeds(chassisSpeeds);
         UpdateOdometry();
