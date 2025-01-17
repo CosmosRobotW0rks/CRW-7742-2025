@@ -115,6 +115,11 @@ public class SwerveSubsystem extends SubsystemBase {
         chassisSpeeds = speeds;
     }
 
+    public ChassisSpeeds GetChassisSpeeds()
+    {
+        return chassisSpeeds;
+    }
+
 
     public void SetFieldOrientedChassisSpeeds(double xSpeed, double ySpeed, double rotSpeed)
     {

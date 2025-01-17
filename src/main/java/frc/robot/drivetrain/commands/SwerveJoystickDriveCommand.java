@@ -10,17 +10,17 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.drivetrain.OldSwerveSubsystem;
+import frc.robot.drivetrain.SwerveSubsystem;
 
 public class SwerveJoystickDriveCommand extends Command {
-    OldSwerveSubsystem swerve;
+    SwerveSubsystem swerve;
 
     final Supplier<Double> suppX, suppY, suppRot;
     final boolean deadzoneEnabled;
 
     private double lastJoystickUpdateTimestamp = 0;
 
-    public SwerveJoystickDriveCommand(OldSwerveSubsystem swerve, Supplier<Double> xspeed, Supplier<Double> yspeed, Supplier<Double> rotspeed, boolean deadzoneEnabled) {
+    public SwerveJoystickDriveCommand(SwerveSubsystem swerve, Supplier<Double> xspeed, Supplier<Double> yspeed, Supplier<Double> rotspeed, boolean deadzoneEnabled) {
         this.swerve = swerve;
         this.deadzoneEnabled = deadzoneEnabled;
 
@@ -81,7 +81,7 @@ public class SwerveJoystickDriveCommand extends Command {
         targetRotspeed = GetAccelLimitedSpeed(chassisSpeeds.omegaRadiansPerSecond, targetRotspeed, delta, DriveConstants.MaxRotAccel);
 
 
-        swerve.DriveFieldOriented(targetXspeed, targetYspeed, targetRotspeed);
+        swerve.SetFieldOrientedChassisSpeeds(targetXspeed, targetYspeed, targetRotspeed);
     }
 
     
