@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.Random;
+
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -25,6 +27,11 @@ public class RobotContainer {
     SmartDashboard.putBoolean("Swerve Initialized", false);
     swerve  = new SwerveSubsystem(controller.getHID());
     SmartDashboard.putBoolean("Swerve Initialized", true);
+
+
+    Random rnd = new Random();
+    int val = rnd.nextInt() % 100;
+    SmartDashboard.putNumber("RANDOM", val);
 
     configureBindings();
   }

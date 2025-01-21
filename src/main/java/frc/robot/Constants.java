@@ -14,7 +14,7 @@ public final class Constants {
 
     public static class DriveConstants {
         
-        public static final double MaxDriveSpeed = 0.5; // m/s
+        public static final double MaxDriveSpeed = 1; // m/s
         public static final double MaxDriveAccel = 15.0; // m/s^2
 
         public static final double MaxRotSpeed = Math.PI * 0.5; // rad/s

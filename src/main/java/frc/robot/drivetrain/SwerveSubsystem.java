@@ -36,12 +36,15 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveConstants;
 
+// NWU COORDINATES!!!!
 public class SwerveSubsystem extends SubsystemBase {
 
     XboxController joy;
@@ -67,6 +70,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0, 0, 0);
 
+
     SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, GetRobotHeading(), GetModulePositions());
 
     VisionPoseEstimator poseEstimator = new VisionPoseEstimator("AACAM");
@@ -76,26 +80,48 @@ public class SwerveSubsystem extends SubsystemBase {
         this.joy = joy;   
         
         SmartDashboard.putData("Field", odomDisplay);
+
+        SmartDashboard.putData("HOME", Commands.runOnce(() -> {
+            for (SwerveModule module : modules) {
+                Rotation2d currentAngle = module.GetAngle();
+
+                Rotation2d targetAngle = Rotation2d.fromRadians(currentAngle.getRadians() % (2*Math.PI));
+
+                module.SetTargetAngle(targetAngle);
+                System.out.printf("Module Angle: %f", targetAngle.getDegrees());
+            }
+
+        }));
     }
 
-    boolean fieldOriented = true;
+    boolean fieldOriented = false;
 
     void JoyTest()
     {
         if(joy.getXButtonPressed()) fieldOriented = !fieldOriented;
         SmartDashboard.putBoolean("Field Oriented", fieldOriented);
 
-        double x = joy.getLeftX() * Constants.DriveConstants.MaxDriveSpeed;
-        double y = -joy.getLeftY() * Constants.DriveConstants.MaxDriveSpeed;
-        double rot = joy.getRightX() * Constants.DriveConstants.MaxRotSpeed;
+        double x = -joy.getLeftY() * Constants.DriveConstants.MaxDriveSpeed;
+        double y = -joy.getLeftX() * Constants.DriveConstants.MaxDriveSpeed;
+        double rot = joy.getRightX() * Constants.DriveConstants.MaxRotSpeed; // CCW Positive
+
+        x = Math.abs(x) < 0.1 ? 0 : x;
+        y = Math.abs(y) < 0.1 ? 0 : y;
+        rot = Math.abs(rot) < 0.1 ? 0 : rot;
         
         if(fieldOriented) SetFieldOrientedChassisSpeeds(x, y, rot);
 
         else SetChassisSpeeds(new ChassisSpeeds(x,y,rot));
     }
 
+
+    //ChassisSpeeds prevSpeeds = new ChassisSpeeds(0,0,0);
+
     void ApplyChassisSpeeds(ChassisSpeeds speeds)
     {
+
+        SmartDashboard.putNumber("AAAAAA", 1000);
+
         SwerveModuleState[] moduleStates = kinematics.toSwerveModuleStates(speeds);
 
         for (int i = 0; i < moduleStates.length; i++)
@@ -104,11 +130,30 @@ public class SwerveSubsystem extends SubsystemBase {
             SwerveModule module = modules[i];
 
             state.optimize(module.GetAngle());
+            //optimizeModuleState(state, module.GetAngle());
 
             state.speedMetersPerSecond *= state.angle.minus(module.GetAngle()).getCos(); // cosine compensation
 
             module.SetTargetState(state);
         }
+    }
+
+    void optimizeModuleState(SwerveModuleState state, Rotation2d currentAngle)
+    {
+        double currentRad = currentAngle.getRadians();
+        double targetRad = state.angle.getRadians() % (Math.PI*2);
+
+        double min = Math.floor(currentRad / targetRad) * targetRad;
+        double max = min + targetRad;
+
+        double minDiff = Math.abs(currentRad - min);
+        double maxDiff = Math.abs(currentRad - max);
+
+        if(minDiff < maxDiff)
+        {
+            state.angle = Rotation2d.fromRadians(min);
+        }
+        else state.angle = Rotation2d.fromRadians(max);
     }
 
     void UpdateOdometry()
@@ -142,6 +187,8 @@ public class SwerveSubsystem extends SubsystemBase {
     public void SetChassisSpeeds(ChassisSpeeds speeds)
     {
         chassisSpeeds = speeds;
+
+        SmartDashboard.putNumberArray("ChassisSpeeds", new Double[] {speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond});
     }
 
     public ChassisSpeeds GetChassisSpeeds()
