@@ -109,7 +109,45 @@ public class SwerveModule {
     }
 
     public void SetTargetState(SwerveModuleState state) {
+        optim(state, false);
+
         SetTargetSpeedMPS(state.speedMetersPerSecond);
         SetTargetAngle(state.angle);
+    }
+
+    
+    public double GetShortestRoute(double a1, double a2) {
+        // Clamp currentAngle
+        double a1_clamped = a1 % (2.0 * Math.PI);
+        a1_clamped += a1_clamped < 0 ? 2.0 * Math.PI : 0;
+
+        // Find shortest route
+        double nt = a2 + a1 - a1_clamped;
+        if (a2 - a1_clamped > Math.PI)
+            nt -= 2.0 * Math.PI;
+        if (a2 - a1_clamped < -Math.PI)
+            nt += 2.0 * Math.PI;
+
+        return nt;
+    }
+
+    public void optim(SwerveModuleState state, boolean forceForward) {
+        double currentAngle = angleEncoder.getPosition();
+        double currentAngleClamped = currentAngle % (2.0 * Math.PI);
+        currentAngleClamped += currentAngleClamped < 0 ? 2.0 * Math.PI : 0;
+
+        double t = state.angle.getRadians();
+        double t1 = GetShortestRoute(currentAngle, t);
+        double t2 = GetShortestRoute(currentAngle, t > Math.PI ? t - Math.PI : t + Math.PI);
+
+        double diff1 = Math.abs(t1 - currentAngle);
+        double diff2 = Math.abs(t2 - currentAngle);
+
+        if (!forceForward && diff1 > diff2) {
+            state.angle = Rotation2d.fromRadians(t2);
+
+        } else {
+            state.angle = Rotation2d.fromRadians(t1);
+        }
     }
 }

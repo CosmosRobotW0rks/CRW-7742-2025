@@ -114,9 +114,6 @@ public class SwerveSubsystem extends SubsystemBase {
         else SetChassisSpeeds(new ChassisSpeeds(x,y,rot));
     }
 
-
-    //ChassisSpeeds prevSpeeds = new ChassisSpeeds(0,0,0);
-
     void ApplyChassisSpeeds(ChassisSpeeds speeds)
     {
 
@@ -129,33 +126,11 @@ public class SwerveSubsystem extends SubsystemBase {
             SwerveModuleState state = moduleStates[i];
             SwerveModule module = modules[i];
 
-            state.optimize(module.GetAngle());
-            //optimizeModuleState(state, module.GetAngle());
-
             state.speedMetersPerSecond *= state.angle.minus(module.GetAngle()).getCos(); // cosine compensation
 
             module.SetTargetState(state);
         }
     }
-
-    void optimizeModuleState(SwerveModuleState state, Rotation2d currentAngle)
-    {
-        double currentRad = currentAngle.getRadians();
-        double targetRad = state.angle.getRadians() % (Math.PI*2);
-
-        double min = Math.floor(currentRad / targetRad) * targetRad;
-        double max = min + targetRad;
-
-        double minDiff = Math.abs(currentRad - min);
-        double maxDiff = Math.abs(currentRad - max);
-
-        if(minDiff < maxDiff)
-        {
-            state.angle = Rotation2d.fromRadians(min);
-        }
-        else state.angle = Rotation2d.fromRadians(max);
-    }
-
     void UpdateOdometry()
     {
         Pose2d robotPose = odometry.update(GetRobotHeading(), GetModulePositions());
