@@ -37,7 +37,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    /* 
+    
     swerve.setDefaultCommand(new SwerveJoystickDriveCommand(
       swerve,
       () -> controller.getHID().getLeftX(),
@@ -45,7 +45,7 @@ public class RobotContainer {
       () -> controller.getHID().getRightX(), 
       true
     ));
-*/
+
     
   }
 

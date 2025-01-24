@@ -57,8 +57,8 @@ public class SwerveModule {
         SmartDashboard.putNumber("Drive VCF", driveVCF);
         SmartDashboard.putNumber("Angle PCF", anglePCF);
 
-        angleConfig.idleMode(IdleMode.kCoast);
-        driveConfig.idleMode(IdleMode.kCoast);
+        angleConfig.idleMode(IdleMode.kBrake);
+        driveConfig.idleMode(IdleMode.kBrake);
 
         angleConfig.closedLoop.pid(SwerveConstants.AnglePID_P, SwerveConstants.AnglePID_I, SwerveConstants.AnglePID_D);
         driveConfig.closedLoop.pidf(SwerveConstants.DrivePIDF_P, SwerveConstants.DrivePIDF_I,

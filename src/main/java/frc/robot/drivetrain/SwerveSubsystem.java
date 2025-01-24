@@ -94,26 +94,7 @@ public class SwerveSubsystem extends SubsystemBase {
         }));
     }
 
-    boolean fieldOriented = false;
-
-    void JoyTest()
-    {
-        if(joy.getXButtonPressed()) fieldOriented = !fieldOriented;
-        SmartDashboard.putBoolean("Field Oriented", fieldOriented);
-
-        double x = -joy.getLeftY() * Constants.DriveConstants.MaxDriveSpeed;
-        double y = -joy.getLeftX() * Constants.DriveConstants.MaxDriveSpeed;
-        double rot = joy.getRightX() * Constants.DriveConstants.MaxRotSpeed; // CCW Positive
-
-        x = Math.abs(x) < 0.1 ? 0 : x;
-        y = Math.abs(y) < 0.1 ? 0 : y;
-        rot = Math.abs(rot) < 0.1 ? 0 : rot;
-        
-        if(fieldOriented) SetFieldOrientedChassisSpeeds(x, y, rot);
-
-        else SetChassisSpeeds(new ChassisSpeeds(x,y,rot));
-    }
-
+    
     void ApplyChassisSpeeds(ChassisSpeeds speeds)
     {
 
@@ -212,7 +193,6 @@ public class SwerveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         ResetOdometryWithVision();
-        JoyTest();
         ApplyChassisSpeeds(chassisSpeeds);
         UpdateOdometry();
 
