@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -71,14 +72,16 @@ public class SwerveSubsystem extends SubsystemBase {
     ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0, 0, 0);
 
 
-    SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, GetRobotHeading(), GetModulePositions());
+    final Pose2d initialPose = new Pose2d(0, 0, new Rotation2d(0));
 
-    VisionPoseEstimator poseEstimator = new VisionPoseEstimator("AACAM");
+    SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, GetRobotHeading(), GetModulePositions(), initialPose);
+
+    Vision vision = new Vision("AACAM");
 
     public SwerveSubsystem(XboxController joy)
     {
-        this.joy = joy;   
-        
+        this.joy = joy;
+
         SmartDashboard.putData("Field", odomDisplay);
 
         SmartDashboard.putData("HOME", Commands.runOnce(() -> {
@@ -156,32 +159,23 @@ public class SwerveSubsystem extends SubsystemBase {
         else state.angle = Rotation2d.fromRadians(max);
     }
 
-    void UpdateOdometry()
+    void UpdatePoseEstimation()
     {
-        Pose2d robotPose = odometry.update(GetRobotHeading(), GetModulePositions());
+        // TODO: Tune deviations
+        
+        Pose2d robotPose = poseEstimator.update(GetRobotHeading(), GetModulePositions());
         odomDisplay.setRobotPose(robotPose);
     }
 
     void ResetOdometryWithVision()
     {
-        Optional<EstimatedRobotPose> optPose = poseEstimator.GetEstimatedPose();
+        Optional<EstimatedRobotPose> optPose = vision.GetEstimatedVisionPose();
 
         if(optPose == null || !optPose.isPresent()) return;
 
-        EstimatedRobotPose estimatedPose = optPose.get();
-
-        Pose3d pose3d = estimatedPose.estimatedPose;
-
-        SmartDashboard.putNumber("EstimatedPose X", pose3d.getX());
-        SmartDashboard.putNumber("EstimatedPose Y", pose3d.getY());
-        SmartDashboard.putNumber("EstimatedPose Z", pose3d.getZ());
-
-        estimatedPose.estimatedPose.getX();
-
-        Pose2d pose = new Pose2d(pose3d.getX(), pose3d.getY(), new Rotation2d(pose3d.getRotation().getX(), pose3d.getRotation().getY()));
-        // Is the pose correct? TODO: Check Pose3D to Pose2D conversion
-
-        odometry.resetPose(pose);
+        EstimatedRobotPose camPose = optPose.get();
+        
+        poseEstimator.addVisionMeasurement(camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
     }
 
     public void SetChassisSpeeds(ChassisSpeeds speeds)
@@ -230,7 +224,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public Pose2d GetRobotPose()
     {
-        return odometry.getPoseMeters();
+        return poseEstimator.getEstimatedPosition();
     }
 
 
@@ -239,7 +233,7 @@ public class SwerveSubsystem extends SubsystemBase {
         ResetOdometryWithVision();
         JoyTest();
         ApplyChassisSpeeds(chassisSpeeds);
-        UpdateOdometry();
+        UpdatePoseEstimation();
 
         swerveStatePublisher.set(GetModuleStates());
         posePublisher.set(GetRobotPose());
