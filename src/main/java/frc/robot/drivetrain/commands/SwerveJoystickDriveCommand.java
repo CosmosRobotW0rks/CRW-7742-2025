@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
@@ -17,6 +18,10 @@ public class SwerveJoystickDriveCommand extends Command {
 
     final Supplier<Double> suppX, suppY, suppRot;
     final boolean deadzoneEnabled;
+
+    SlewRateLimiter filterX = new SlewRateLimiter(DriveConstants.MaxDriveAccel);
+    SlewRateLimiter filterY = new SlewRateLimiter(DriveConstants.MaxDriveAccel);
+    SlewRateLimiter filterRot = new SlewRateLimiter(DriveConstants.MaxRotAccel);
 
     private double lastJoystickUpdateTimestamp = 0;
 
@@ -40,6 +45,11 @@ public class SwerveJoystickDriveCommand extends Command {
         double xpercent = suppX.get();
         double ypercent = suppY.get();
         double rotpercent = suppRot.get();
+/*
+        xpercent = Math.pow(xpercent, 2) * Math.signum(xpercent);
+        ypercent = Math.pow(ypercent, 2) * Math.signum(ypercent);
+        rotpercent = Math.pow(rotpercent, 2) * Math.signum(rotpercent);
+*/
 
         if (deadzoneEnabled) {
             xpercent = ApplyDeadzone(xpercent, DriveConstants.JOYDeadzone_X);
@@ -66,9 +76,16 @@ public class SwerveJoystickDriveCommand extends Command {
         rot = rot < -1 ? -1 : rot > 1 ? 1 : rot;
 
         
-        double targetXspeed = x * DriveConstants.MaxDriveSpeed;
-        double targetYspeed = y * DriveConstants.MaxDriveSpeed;
-        double targetRotspeed = rot * DriveConstants.MaxRotSpeed;
+        double targetXspeed = -y * DriveConstants.MaxDriveSpeed;
+        double targetYspeed = -x * DriveConstants.MaxDriveSpeed;
+        double targetRotSpeed = rot * DriveConstants.MaxRotSpeed;
+
+        targetXspeed = filterX.calculate(targetXspeed);
+        targetYspeed = filterY.calculate(targetYspeed);
+        targetRotSpeed = filterRot.calculate(targetRotSpeed);
+
+
+        /*
         
         double now = Timer.getFPGATimestamp();
         double delta = now - lastJoystickUpdateTimestamp;
@@ -79,9 +96,8 @@ public class SwerveJoystickDriveCommand extends Command {
         targetXspeed = GetAccelLimitedSpeed(chassisSpeeds.vxMetersPerSecond, targetXspeed, delta, DriveConstants.MaxDriveAccel);
         targetYspeed = GetAccelLimitedSpeed(chassisSpeeds.vyMetersPerSecond, targetYspeed, delta, DriveConstants.MaxDriveAccel);
         targetRotspeed = GetAccelLimitedSpeed(chassisSpeeds.omegaRadiansPerSecond, targetRotspeed, delta, DriveConstants.MaxRotAccel);
-
-
-        swerve.SetFieldOrientedChassisSpeeds(targetXspeed, targetYspeed, targetRotspeed);
+*/
+        swerve.SetFieldOrientedChassisSpeeds(targetXspeed, targetYspeed, targetRotSpeed);
     }
 
     
