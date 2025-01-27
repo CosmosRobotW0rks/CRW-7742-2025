@@ -78,7 +78,7 @@ public class SwerveJoystickDriveCommand extends Command {
         
         double targetXspeed = -y * DriveConstants.MaxDriveSpeed;
         double targetYspeed = -x * DriveConstants.MaxDriveSpeed;
-        double targetRotSpeed = rot * DriveConstants.MaxRotSpeed;
+        double targetRotSpeed = -rot * DriveConstants.MaxRotSpeed;
 
         targetXspeed = filterX.calculate(targetXspeed);
         targetYspeed = filterY.calculate(targetYspeed);
