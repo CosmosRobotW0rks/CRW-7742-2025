@@ -170,7 +170,8 @@ public class SwerveSubsystem extends SubsystemBase {
     {
         Rotation2d heading = GetRobotHeading();
         ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rotSpeed, heading);
-        chassisSpeeds = speeds;
+        
+        SetChassisSpeeds(speeds);
     }
 
     public Rotation2d GetRobotHeading() {
