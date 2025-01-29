@@ -26,6 +26,29 @@ public final class Constants {
 
     }
 
+
+    public static class ElevatorConstants {
+
+        public static final int CANID = 0;
+
+        public static final double PID_P = 0;
+        public static final double PID_I = 0;
+        public static final double PID_D = 0;
+        
+        public static final double PCF = 0;
+
+        public static final double TargetTolerance = 0;
+        public static final double TargetTimeoutS = 0;
+
+        public static final double TARGET_CORALSTAT = 0;
+        public static final double TARGET_PROCESSOR = 0;
+        public static final double TARGET_REEFL1 = 0;
+        public static final double TARGET_REEFL2 = 0;
+        public static final double TARGET_REEFL3 = 0;
+        public static final double TARGET_REEFL4 = 0;
+
+    }
+
     public static class SwerveConstants {
 
         public static final double ModuleOffsetM_X = 0.28;
