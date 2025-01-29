@@ -6,6 +6,7 @@ package frc.robot;
 
 import java.util.Random;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -40,6 +41,7 @@ public class RobotContainer {
     
     swerve.setDefaultCommand(new SwerveJoystickDriveCommand(
       swerve,
+      controller,
       () -> controller.getHID().getLeftX(),
       () -> controller.getHID().getLeftY(),
       () -> controller.getHID().getRightX(), 

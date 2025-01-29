@@ -5,16 +5,23 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.drivetrain.SwerveSubsystem;
 
 public class SwerveJoystickDriveCommand extends Command {
     SwerveSubsystem swerve;
+
+    CommandXboxController _j;
 
     final Supplier<Double> suppX, suppY, suppRot;
     final boolean deadzoneEnabled;
@@ -25,7 +32,7 @@ public class SwerveJoystickDriveCommand extends Command {
 
     private double lastJoystickUpdateTimestamp = 0;
 
-    public SwerveJoystickDriveCommand(SwerveSubsystem swerve, Supplier<Double> xspeed, Supplier<Double> yspeed, Supplier<Double> rotspeed, boolean deadzoneEnabled) {
+    public SwerveJoystickDriveCommand(SwerveSubsystem swerve, CommandXboxController j, Supplier<Double> xspeed, Supplier<Double> yspeed, Supplier<Double> rotspeed, boolean deadzoneEnabled) {
         this.swerve = swerve;
         this.deadzoneEnabled = deadzoneEnabled;
 
@@ -33,12 +40,19 @@ public class SwerveJoystickDriveCommand extends Command {
         this.suppY = yspeed;
         this.suppRot = rotspeed;
 
+        _j = j;
+
         addRequirements(swerve);
     }
 
     @Override
     public void initialize() {
+
+        start = swerve.GetRobotPose().getTranslation();
     }
+
+
+    Translation2d start;
 
     @Override
     public void execute() {
@@ -58,6 +72,16 @@ public class SwerveJoystickDriveCommand extends Command {
         }
 
         JoystickDrive(xpercent, ypercent, rotpercent);
+
+
+        Translation2d res = start.minus(swerve.GetRobotPose().getTranslation());
+
+        SmartDashboard.putNumberArray("MOVETR", new double[] {res.getX(), res.getY()});
+        
+        if(_j.getHID().getYButtonPressed())
+        {
+            start = swerve.GetRobotPose().getTranslation();
+        }
     }
 
     @Override
