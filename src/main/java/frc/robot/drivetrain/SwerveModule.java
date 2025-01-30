@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotation;
 
+import com.pathplanner.lib.trajectory.SwerveModuleTrajectoryState;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -112,6 +113,15 @@ public class SwerveModule {
         optim(state, false);
 
         SetTargetSpeedMPS(state.speedMetersPerSecond);
+        SetTargetAngle(state.angle);
+    }
+
+    public void Home()
+    {
+        SwerveModuleState state = new SwerveModuleState(0, Rotation2d.kZero);
+
+        optim(state, true);
+
         SetTargetAngle(state.angle);
     }
 

@@ -30,8 +30,6 @@ public class SwerveJoystickDriveCommand extends Command {
     SlewRateLimiter filterY = new SlewRateLimiter(DriveConstants.MaxDriveAccel);
     SlewRateLimiter filterRot = new SlewRateLimiter(DriveConstants.MaxRotAccel);
 
-    private double lastJoystickUpdateTimestamp = 0;
-
     public SwerveJoystickDriveCommand(SwerveSubsystem swerve, CommandXboxController j, Supplier<Double> xspeed, Supplier<Double> yspeed, Supplier<Double> rotspeed, boolean deadzoneEnabled) {
         this.swerve = swerve;
         this.deadzoneEnabled = deadzoneEnabled;
@@ -86,7 +84,7 @@ public class SwerveJoystickDriveCommand extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        System.out.println(String.format("Swerve Joystick Drive Command ended (Interrupted: %d)", interrupted));
+        System.out.println(String.format("Swerve Joystick Drive Command ended (Interrupted: %d)", interrupted ? 1 : 0));
     }
 
     @Override
@@ -94,6 +92,9 @@ public class SwerveJoystickDriveCommand extends Command {
         return false;
     }
 
+    boolean xZero = true;
+    boolean yZero = true;
+    boolean rotZero = true;
     void JoystickDrive(double x, double y, double rot) {
         x =     x < -1 ? -1 : x   > 1 ? 1 : x;
         y =     y < -1 ? -1 : y   > 1 ? 1 : y;
@@ -109,18 +110,13 @@ public class SwerveJoystickDriveCommand extends Command {
         targetRotSpeed = filterRot.calculate(targetRotSpeed);
 
 
-        /*
-        
-        double now = Timer.getFPGATimestamp();
-        double delta = now - lastJoystickUpdateTimestamp;
-        lastJoystickUpdateTimestamp = now;
+        if(xZero && yZero && rotZero && targetXspeed == 0 && targetYspeed == 0 && targetRotSpeed == 0) return;
 
-        ChassisSpeeds chassisSpeeds = swerve.GetChassisSpeeds();
 
-        targetXspeed = GetAccelLimitedSpeed(chassisSpeeds.vxMetersPerSecond, targetXspeed, delta, DriveConstants.MaxDriveAccel);
-        targetYspeed = GetAccelLimitedSpeed(chassisSpeeds.vyMetersPerSecond, targetYspeed, delta, DriveConstants.MaxDriveAccel);
-        targetRotspeed = GetAccelLimitedSpeed(chassisSpeeds.omegaRadiansPerSecond, targetRotspeed, delta, DriveConstants.MaxRotAccel);
-*/
+        xZero = targetXspeed == 0;
+        yZero = targetYspeed == 0;
+        rotZero = targetRotSpeed == 0;
+
         swerve.SetFieldOrientedChassisSpeeds(targetXspeed, targetYspeed, targetRotSpeed);
     }
 

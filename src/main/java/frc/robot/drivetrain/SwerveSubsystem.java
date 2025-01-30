@@ -100,28 +100,36 @@ public class SwerveSubsystem extends SubsystemBase {
 
         InitializePathPlanner();
 
+        InitializeShortcutButtons();
+
+    }
+
+    void InitializeShortcutButtons()
+    {
+        SmartDashboard.putData("Reset Heading", Commands.runOnce(() -> poseEstimator.resetRotation(Rotation2d.kZero)));
+
+        SmartDashboard.putData("Home Swerve", Commands.runOnce(() -> {
+            for (SwerveModule swerveModule : modules) {
+                swerveModule.Home();
+            }
+        }, this));
     }
 
     void InitializePathPlanner() {
-
         try {
 
             RobotConfig config = RobotConfig.fromGUISettings();
 
             AutoBuilder.configure(
                     () -> GetRobotPose(),
-                    p2d -> {
-                    },
+                    p2d -> poseEstimator.resetPose(p2d),
                     () -> GetChassisSpeeds(),
-                    (ChassisSpeeds, DriveFeedforwards) -> {
-                    },
+                    (ChassisSpeeds, DriveFeedforwards) -> SetChassisSpeeds(ChassisSpeeds),
                     new PPHolonomicDriveController(
-                            // PPHolonomicController is the built in path following controller for holonomic
-                            // drive trains
-                            new PIDConstants(5.0, 0.0, 0.0),
                             // Translation PID constants
+                            new PIDConstants(5.0, 0.0, 0.0),
+                            // Rotation PID constants
                             new PIDConstants(5.0, 0.0, 0.0)
-                    // Rotation PID constants
                     ),
                     config,
                     () -> {
@@ -183,11 +191,22 @@ public class SwerveSubsystem extends SubsystemBase {
         poseEstimator.addVisionMeasurement(camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
     }
 
+    double c = 0;
     public void SetChassisSpeeds(ChassisSpeeds speeds) {
         chassisSpeeds = speeds;
 
         SmartDashboard.putNumberArray("ChassisSpeeds",
-                new Double[] { speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond });
+                new Double[] { speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond, c++});
+    }
+
+    public Command StopCommand()
+    {
+        return Commands.runOnce(() -> SetChassisSpeeds(new ChassisSpeeds(0,0,0)), this);
+    }
+
+    public void Stop()
+    {
+        SetChassisSpeeds(new ChassisSpeeds(0,0,0));
     }
 
     public ChassisSpeeds GetChassisSpeeds() {
@@ -236,4 +255,6 @@ public class SwerveSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("RobotHeading", GetRobotHeading().getDegrees());
 
     }
+
+    
 }
