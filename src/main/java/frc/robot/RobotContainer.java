@@ -6,6 +6,9 @@ package frc.robot;
 
 import java.util.Random;
 
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -46,12 +49,15 @@ public class RobotContainer {
       () -> controller.getHID().getLeftY(),
       () -> controller.getHID().getRightX(), 
       true
-    ));
-
-    
+    ));    
   }
 
   public Command getAutonomousCommand() {
-    return Commands.none();
+    return (new PathPlannerAuto("TESTAUTO")).andThen(swerve.StopCommand());
+  }
+
+  public void StopDrivetrain()
+  {
+    swerve.Stop();
   }
 }
