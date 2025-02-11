@@ -20,6 +20,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.controllers.PPLTVController;
 import com.pathplanner.lib.controllers.PathFollowingController;
+import com.pathplanner.lib.path.PathConstraints;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -37,6 +38,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
@@ -102,6 +104,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
         InitializeShortcutButtons();
 
+    }
+
+    public Command DriveToPose(Pose2d p2d)
+    {
+        PathConstraints constraints = new PathConstraints(3, 4, Units.degreesToRadians(540), Units.degreesToRadians(720));
+
+        return AutoBuilder.pathfindToPose(p2d, constraints).andThen(this.StopCommand());
     }
 
     void InitializeShortcutButtons()
@@ -201,7 +210,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public Command StopCommand()
     {
-        return Commands.runOnce(() -> SetChassisSpeeds(new ChassisSpeeds(0,0,0)), this);
+        return Commands.runOnce(() -> Stop(), this);
     }
 
     public void Stop()

@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.drivetrain.SwerveSubsystem;
+import frc.robot.led.LEDSubsystem;
 
 public class SwerveJoystickDriveCommand extends Command {
     SwerveSubsystem swerve;
@@ -117,7 +118,9 @@ public class SwerveJoystickDriveCommand extends Command {
         yZero = targetYspeed == 0;
         rotZero = targetRotSpeed == 0;
 
-        swerve.SetFieldOrientedChassisSpeeds(targetXspeed, targetYspeed, targetRotSpeed);
+        ChassisSpeeds cs = new ChassisSpeeds(targetXspeed, targetYspeed, targetRotSpeed);
+
+        swerve.SetChassisSpeeds(cs);
     }
 
     
