@@ -10,6 +10,7 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,14 +29,7 @@ public class RobotContainer {
   private final SwerveSubsystem swerve;
 
   public RobotContainer() {
-    SmartDashboard.putBoolean("Swerve Initialized", false);
-    swerve  = new SwerveSubsystem(controller.getHID());
-    SmartDashboard.putBoolean("Swerve Initialized", true);
-
-
-    Random rnd = new Random();
-    int val = rnd.nextInt() % 100;
-    SmartDashboard.putNumber("RANDOM", val);
+    swerve = new SwerveSubsystem();
 
     configureBindings();
   }
@@ -49,7 +43,8 @@ public class RobotContainer {
       () -> controller.getHID().getLeftY(),
       () -> controller.getHID().getRightX(), 
       true
-    ));    
+    ));
+
   }
 
   public Command getAutonomousCommand() {

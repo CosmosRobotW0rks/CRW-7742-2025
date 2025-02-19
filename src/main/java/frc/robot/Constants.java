@@ -6,26 +6,17 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Meters;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 
 public final class Constants {
 
-
-    public static class DriveConstants {
-        
-        public static final double MaxDriveSpeed = 2; // m/s
-        public static final double MaxDriveAccel = 10; // m/s^2
-
-        public static final double MaxRotSpeed = Math.PI * 2 * 0.5; // rad/s
-        public static final double MaxRotAccel = Math.PI * 2 * 6; // rad/s^2
-
-        public static final double JOYDeadzone_X = 0.1;
-        public static final double JOYDeadzone_Y = 0.1;
-        public static final double JOYDeadzone_Rot = 0.1;
-
+    public static class VisionConstants {
+        public static final Transform3d RobotToCam = new Transform3d(new Translation3d(0.35, 0.0, 0.15), new Rotation3d(0,45,0));
     }
-
 
     public static class ElevatorConstants {
 
@@ -46,6 +37,20 @@ public final class Constants {
         public static final double TARGET_REEFL2 = 0;
         public static final double TARGET_REEFL3 = 0;
         public static final double TARGET_REEFL4 = 0;
+
+    }
+
+    public static class DriveConstants {
+        
+        public static final double MaxDriveSpeed = 2; // m/s
+        public static final double MaxDriveAccel = 5; // m/s^2
+
+        public static final double MaxRotSpeed = Math.PI * 2 * 0.5; // rad/s
+        public static final double MaxRotAccel = Math.PI * 2 * 6; // rad/s^2
+
+        public static final double JOYDeadzone_X = 0.1;
+        public static final double JOYDeadzone_Y = 0.1;
+        public static final double JOYDeadzone_Rot = 0.1;
 
     }
 

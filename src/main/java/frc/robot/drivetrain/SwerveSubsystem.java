@@ -64,13 +64,13 @@ import frc.robot.util.Elastic.Notification.NotificationLevel;
 // NWU COORDINATES!!!!
 public class SwerveSubsystem extends SubsystemBase {
 
-    XboxController joy;
-
     StructArrayPublisher<SwerveModuleState> swerveStatePublisher = NetworkTableInstance.getDefault()
             .getStructArrayTopic("SwerveStates", SwerveModuleState.struct).publish();
     StructPublisher<Pose2d> posePublisher = NetworkTableInstance.getDefault()
             .getStructTopic("ChassisPose", Pose2d.struct).publish();
-    Field2d odomDisplay = new Field2d();
+
+            Field2d odomDisplay = new Field2d();
+            Field2d intendedPoseDisplay = new Field2d();
 
     public AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
 
@@ -89,21 +89,31 @@ public class SwerveSubsystem extends SubsystemBase {
 
     ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0, 0, 0);
 
-    final Pose2d initialPose = new Pose2d(0, 0, new Rotation2d(0));
-
     SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, GetRobotHeading(),
-            GetModulePositions(), initialPose);
+            GetModulePositions(), new Pose2d(0, 0, new Rotation2d(0)));
 
     Vision vision = new Vision("AACAM");
 
-    public SwerveSubsystem(XboxController joy) {
-        this.joy = joy;
-        SmartDashboard.putData("Field", odomDisplay);
+    public SwerveSubsystem() {
+        SmartDashboard.putData("Estimated Pose", odomDisplay);
 
         InitializePathPlanner();
 
         InitializeShortcutButtons();
 
+    }
+
+    public void SetChassisSpeeds(ChassisSpeeds speeds) {
+        chassisSpeeds = speeds;
+
+        SmartDashboard.putNumberArray("ChassisSpeeds", new Double[] { speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond});
+    }
+
+    public void SetFieldOrientedChassisSpeeds(double xSpeed, double ySpeed, double rotSpeed) {
+        Rotation2d heading = GetRobotHeading();
+        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rotSpeed, heading);
+
+        SetChassisSpeeds(speeds);
     }
 
     public Command DriveToPose(Pose2d p2d)
@@ -113,6 +123,45 @@ public class SwerveSubsystem extends SubsystemBase {
         return AutoBuilder.pathfindToPose(p2d, constraints).andThen(this.StopCommand());
     }
 
+    public Command StopCommand()
+    {
+        return Commands.runOnce(() -> Stop(), this);
+    }
+
+    public void Stop()
+    {
+        SetChassisSpeeds(new ChassisSpeeds(0,0,0));
+    }
+
+    public ChassisSpeeds GetChassisSpeeds() {
+        return chassisSpeeds;
+    }
+
+    public Rotation2d GetRobotHeading() {
+        return Rotation2d.fromDegrees(360.0 - gyro.getFusedHeading());
+    }
+
+    public SwerveModuleState[] GetModuleStates() {
+        SwerveModuleState[] states = new SwerveModuleState[modules.length];
+        for (int i = 0; i < modules.length; i++) {
+            states[i] = modules[i].GetState();
+        }
+        return states;
+    }
+
+    public SwerveModulePosition[] GetModulePositions() {
+        SwerveModulePosition[] positions = new SwerveModulePosition[modules.length];
+        for (int i = 0; i < modules.length; i++) {
+            positions[i] = modules[i].GetPosition();
+        }
+        return positions;
+    }
+
+    public Pose2d GetRobotPose() {
+        return poseEstimator.getEstimatedPosition();
+    }
+
+    
     void InitializeShortcutButtons()
     {
         SmartDashboard.putData("Reset Heading", Commands.runOnce(() -> poseEstimator.resetRotation(Rotation2d.kZero)));
@@ -166,27 +215,11 @@ public class SwerveSubsystem extends SubsystemBase {
         }
     }
 
-    void optimizeModuleState(SwerveModuleState state, Rotation2d currentAngle) {
-        double currentRad = currentAngle.getRadians();
-        double targetRad = state.angle.getRadians() % (Math.PI * 2);
-
-        double min = Math.floor(currentRad / targetRad) * targetRad;
-        double max = min + targetRad;
-
-        double minDiff = Math.abs(currentRad - min);
-        double maxDiff = Math.abs(currentRad - max);
-
-        if (minDiff < maxDiff) {
-            state.angle = Rotation2d.fromRadians(min);
-        } else
-            state.angle = Rotation2d.fromRadians(max);
-    }
-
     void UpdatePoseEstimation() {
-        // TODO: Tune deviations
 
         Pose2d robotPose = poseEstimator.update(GetRobotHeading(), GetModulePositions());
         odomDisplay.setRobotPose(robotPose);
+
     }
 
     void ResetOdometryWithVision() {
@@ -198,59 +231,6 @@ public class SwerveSubsystem extends SubsystemBase {
         EstimatedRobotPose camPose = optPose.get();
 
         poseEstimator.addVisionMeasurement(camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
-    }
-
-    double c = 0;
-    public void SetChassisSpeeds(ChassisSpeeds speeds) {
-        chassisSpeeds = speeds;
-
-        SmartDashboard.putNumberArray("ChassisSpeeds",
-                new Double[] { speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond, c++});
-    }
-
-    public Command StopCommand()
-    {
-        return Commands.runOnce(() -> Stop(), this);
-    }
-
-    public void Stop()
-    {
-        SetChassisSpeeds(new ChassisSpeeds(0,0,0));
-    }
-
-    public ChassisSpeeds GetChassisSpeeds() {
-        return chassisSpeeds;
-    }
-
-    public void SetFieldOrientedChassisSpeeds(double xSpeed, double ySpeed, double rotSpeed) {
-        Rotation2d heading = GetRobotHeading();
-        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rotSpeed, heading);
-
-        SetChassisSpeeds(speeds);
-    }
-
-    public Rotation2d GetRobotHeading() {
-        return Rotation2d.fromDegrees(360.0 - gyro.getFusedHeading());
-    }
-
-    public SwerveModuleState[] GetModuleStates() {
-        SwerveModuleState[] states = new SwerveModuleState[modules.length];
-        for (int i = 0; i < modules.length; i++) {
-            states[i] = modules[i].GetState();
-        }
-        return states;
-    }
-
-    public SwerveModulePosition[] GetModulePositions() {
-        SwerveModulePosition[] positions = new SwerveModulePosition[modules.length];
-        for (int i = 0; i < modules.length; i++) {
-            positions[i] = modules[i].GetPosition();
-        }
-        return positions;
-    }
-
-    public Pose2d GetRobotPose() {
-        return poseEstimator.getEstimatedPosition();
     }
 
     @Override
@@ -265,5 +245,4 @@ public class SwerveSubsystem extends SubsystemBase {
 
     }
 
-    
 }
