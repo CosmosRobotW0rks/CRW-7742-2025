@@ -51,41 +51,35 @@ public final class Constants {
 
     public static class SwerveConstants {
 
-        public static final double ModuleOffsetM_X = 0.28;
-        public static final double ModuleOffsetM_Y = 0.28;
+        public static final double ModuleOffsetM_X = 0.37;
+        public static final double ModuleOffsetM_Y = 0.37;
 
-        public static final double GearRatio_Angle = 18;
-        public static final double GearRatio_Drive = 8.31;
+        public static final double GearRatio_Angle = 11.7187;
+        public static final double GearRatio_Drive = 6.5;
         public static final double WheelDiameterM = Units.inchesToMeters(4);
 
-        public static final double AnglePID_P = 0.5; 
-        public static final double AnglePID_I = 0; 
-        public static final double AnglePID_D = 0.2; 
+        public static final double AnglePID_P = 0.8;
+        public static final double AnglePID_I = 0;
+        public static final double AnglePID_D = 0; 
 
-        public static final double DrivePIDF_P = 0.25; 
+        public static final double DrivePIDF_P = 0.1;
         public static final double DrivePIDF_I = 0; 
         public static final double DrivePIDF_D = 0;
         public static final double DrivePIDF_FF = 0.3; 
 
 
 
-        public static final int AngleCANID_FL = 4;
-        public static final int DriveCANID_FL = 6;
+        public static final int AngleCANID_FL = 1;
+        public static final int DriveCANID_FL = 2;
 
-        public static final int AngleCANID_FR = 2;
-        public static final int DriveCANID_FR = 5;
+        public static final int AngleCANID_FR = 3;
+        public static final int DriveCANID_FR = 4;
 
-        public static final int AngleCANID_BL = 8;
-        public static final int DriveCANID_BL = 7;
+        public static final int AngleCANID_BL = 5;
+        public static final int DriveCANID_BL = 6;
 
-        public static final int AngleCANID_BR = 1;
-        public static final int DriveCANID_BR = 3;
-
-
-
-
-        // OLD
-        public static final double SpeedCalibValue = 0.33 / 2.0;
+        public static final int AngleCANID_BR = 7;
+        public static final int DriveCANID_BR = 8;
 
 
     }

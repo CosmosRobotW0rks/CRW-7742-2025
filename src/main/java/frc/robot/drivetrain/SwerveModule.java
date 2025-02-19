@@ -65,6 +65,7 @@ public class SwerveModule {
         driveConfig.closedLoop.pidf(SwerveConstants.DrivePIDF_P, SwerveConstants.DrivePIDF_I,
                 SwerveConstants.DrivePIDF_D, SwerveConstants.DrivePIDF_FF);
 
+        angleConfig.inverted(true);
         angleConfig.closedLoop.outputRange(-0.5, 0.5);
 
         angleConfig.encoder.positionConversionFactor(anglePCF);
