@@ -32,11 +32,12 @@ public final class Constants {
         public static final double TargetTimeoutS = 0;
 
         public static final double TARGET_CORALSTAT = 0;
-        public static final double TARGET_PROCESSOR = 0;
         public static final double TARGET_REEFL1 = 0;
         public static final double TARGET_REEFL2 = 0;
         public static final double TARGET_REEFL3 = 0;
         public static final double TARGET_REEFL4 = 0;
+        public static final double TARGET_REEFALGAE1 = 0;
+        public static final double TARGET_REEFALGAE2 = 0;
 
     }
 

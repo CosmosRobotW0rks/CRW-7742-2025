@@ -46,11 +46,12 @@ public class ElevatorSubsystem extends SubsystemBase  {
 
         // TARGET CONFIG
         targetMap.put(ElevatorTarget.CORALSTAT, ElevatorConstants.TARGET_CORALSTAT);
-        targetMap.put(ElevatorTarget.PROCESSOR, ElevatorConstants.TARGET_PROCESSOR);
         targetMap.put(ElevatorTarget.REEFL1, ElevatorConstants.TARGET_REEFL1);
         targetMap.put(ElevatorTarget.REEFL2, ElevatorConstants.TARGET_REEFL2);
         targetMap.put(ElevatorTarget.REEFL3, ElevatorConstants.TARGET_REEFL3);
         targetMap.put(ElevatorTarget.REEFL4, ElevatorConstants.TARGET_REEFL4);
+        targetMap.put(ElevatorTarget.REEFALGAE1, ElevatorConstants.TARGET_REEFALGAE1);
+        targetMap.put(ElevatorTarget.REEFALGAE2, ElevatorConstants.TARGET_REEFALGAE2);
     }
 
     public void SetTarget(double target)
