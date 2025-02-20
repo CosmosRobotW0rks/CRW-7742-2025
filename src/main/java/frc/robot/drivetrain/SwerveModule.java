@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import frc.robot.Robot;
 import frc.robot.Constants.SwerveConstants;
 
 public class SwerveModule {
@@ -81,23 +82,31 @@ public class SwerveModule {
         driveController = driveSpark.getClosedLoopController();
     }
 
+    Rotation2d targetAngle = Rotation2d.kZero;
+    double targetVelocity = 0;
+    double simPosition = 0;
+
     public double GetDistanceM() {
-        return driveEncoder.getPosition();
+        return Robot.isSimulation() ? simPosition : driveEncoder.getPosition();
     }
 
     public Rotation2d GetAngle() {
-        return Rotation2d.fromRadians(angleEncoder.getPosition());
+        return Robot.isSimulation() ? targetAngle : Rotation2d.fromRadians(angleEncoder.getPosition());
     }
 
-    public double GetSpeedMPS() {
-        return driveEncoder.getVelocity();
-    }
 
     public void SetTargetAngle(Rotation2d angle) {
+        targetAngle = angle;
         angleController.setReference(angle.getRadians(), ControlType.kPosition);
     }
 
+    public double GetSpeedMPS() {
+        
+        return Robot.isSimulation() ? targetVelocity : driveEncoder.getVelocity();
+    }
+
     public void SetTargetSpeedMPS(double speed) {
+        targetVelocity = speed;
         driveController.setReference(speed, ControlType.kVelocity);
     }
 
@@ -160,5 +169,10 @@ public class SwerveModule {
         } else {
             state.angle = Rotation2d.fromRadians(t1);
         }
+    }
+
+    public void UpdateSimPos()
+    {
+        simPosition += targetVelocity * 0.02;   
     }
 }

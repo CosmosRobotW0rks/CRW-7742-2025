@@ -120,7 +120,7 @@ public class SwerveJoystickDriveCommand extends Command {
 
         ChassisSpeeds cs = new ChassisSpeeds(targetXspeed, targetYspeed, targetRotSpeed);
 
-        swerve.SetChassisSpeeds(cs);
+        swerve.SetFieldOrientedChassisSpeeds(cs);
     }
 
     

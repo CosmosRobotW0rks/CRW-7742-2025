@@ -93,6 +93,9 @@ public class SwerveSubsystem extends SubsystemBase {
             GetModulePositions(), new Pose2d(0, 0, new Rotation2d(0)));
 
     Vision vision = new Vision("AACAM");
+    
+    double estimatedRobotHeadingRad = 0;
+
 
     public SwerveSubsystem() {
         SmartDashboard.putData("Estimated Pose", odomDisplay);
@@ -100,7 +103,6 @@ public class SwerveSubsystem extends SubsystemBase {
         InitializePathPlanner();
 
         InitializeShortcutButtons();
-
     }
 
     public void SetChassisSpeeds(ChassisSpeeds speeds) {
@@ -109,18 +111,26 @@ public class SwerveSubsystem extends SubsystemBase {
         SmartDashboard.putNumberArray("ChassisSpeeds", new Double[] { speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond});
     }
 
-    public void SetFieldOrientedChassisSpeeds(double xSpeed, double ySpeed, double rotSpeed) {
+    public void SetFieldOrientedChassisSpeeds(ChassisSpeeds cs) {
         Rotation2d heading = GetRobotHeading();
-        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rotSpeed, heading);
+        cs = ChassisSpeeds.fromFieldRelativeSpeeds(cs.vxMetersPerSecond, cs.vyMetersPerSecond, cs.omegaRadiansPerSecond, heading);
 
-        SetChassisSpeeds(speeds);
+        SetChassisSpeeds(cs);
     }
 
-    public Command DriveToPose(Pose2d p2d)
+    public Command DriveToPose(Pose2d p2d, boolean allianceOriented)
     {
         PathConstraints constraints = new PathConstraints(3, 4, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
-        return AutoBuilder.pathfindToPose(p2d, constraints).andThen(this.StopCommand());
+        boolean flip = allianceOriented && DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
+
+        Command cmd = flip ? AutoBuilder.pathfindToPoseFlipped(p2d, constraints) : AutoBuilder.pathfindToPose(p2d, constraints);
+
+        cmd = cmd.finallyDo(() -> this.Stop());
+
+        cmd.addRequirements(this);
+
+        return cmd;
     }
 
     public Command StopCommand()
@@ -138,7 +148,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public Rotation2d GetRobotHeading() {
-        return Rotation2d.fromDegrees(360.0 - gyro.getFusedHeading());
+        return Robot.isSimulation() ? Rotation2d.fromRadians(estimatedRobotHeadingRad) : Rotation2d.fromDegrees(360.0 - gyro.getFusedHeading());
     }
 
     public SwerveModuleState[] GetModuleStates() {
@@ -237,12 +247,23 @@ public class SwerveSubsystem extends SubsystemBase {
     public void periodic() {
         ResetOdometryWithVision();
         ApplyChassisSpeeds(chassisSpeeds);
+        
+        if(Robot.isSimulation())
+        {
+            for (SwerveModule module : modules) {
+                module.UpdateSimPos();
+            }
+
+            estimatedRobotHeadingRad += chassisSpeeds.omegaRadiansPerSecond * 0.02;
+            estimatedRobotHeadingRad %= 2*Math.PI;
+        }
+        
         UpdatePoseEstimation();
 
         swerveStatePublisher.set(GetModuleStates());
         posePublisher.set(GetRobotPose());
         SmartDashboard.putNumber("RobotHeading", GetRobotHeading().getDegrees());
-
+        
     }
 
 }

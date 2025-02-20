@@ -5,9 +5,12 @@
 package frc.robot;
 
 import java.util.Random;
+import java.util.Set;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
@@ -15,6 +18,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.drivetrain.SwerveSubsystem;
@@ -35,7 +39,6 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    
     swerve.setDefaultCommand(new SwerveJoystickDriveCommand(
       swerve,
       controller,
@@ -45,6 +48,7 @@ public class RobotContainer {
       true
     ));
 
+    controller.a().whileTrue(Commands.defer(() -> swerve.DriveToPose(new Pose2d(1.289, 7.037, Rotation2d.fromDegrees(130)), true), Set.of()));
   }
 
   public Command getAutonomousCommand() {
