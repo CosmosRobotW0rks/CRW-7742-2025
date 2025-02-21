@@ -60,6 +60,8 @@ public class RobotContainer {
     controller.x().whileTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Left, 2), Set.of()));
     controller.y().whileTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Mid, 2), Set.of()));
     controller.b().whileTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Right, 2), Set.of()));
+
+    controller.a().toggleOnTrue(Commands.run(() -> SmartDashboard.putNumber("CLOSEST", autoHelper.GetClosestReefSideIndex(2))));
   }
 
   public Command getAutonomousCommand() {

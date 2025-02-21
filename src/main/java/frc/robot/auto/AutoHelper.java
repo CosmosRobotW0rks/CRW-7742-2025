@@ -2,6 +2,7 @@ package frc.robot.auto;
 
 import java.io.Serial;
 import java.lang.StackWalker.Option;
+import java.security.PublicKey;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
@@ -126,8 +127,10 @@ public class AutoHelper {
 
         Translation2d robotTranslation = swerve.GetRobotPose().getTranslation();
 
+        double[] distances = new double[aprTagIDs.length];
+
         int index = 0;
-        int minDistance = -1;
+        double minDistance = -1;
 
         for(int i = 0; i < aprTagIDs.length; i++)
         {
@@ -135,12 +138,16 @@ public class AutoHelper {
 
             double dist = Math.abs(pose.getTranslation().getDistance(robotTranslation));
 
+            distances[i] = Math.floor(dist * 100.0) / 100.0;
+            
             if(i == 0 || dist < minDistance)
             {
-                minDistance = (int)dist;
+                minDistance = dist;
                 index = i;
             }
         }
+
+        SmartDashboard.putNumberArray("DISTANCES", distances);
 
         if(minDistance > maxDistance) return -1;
 
