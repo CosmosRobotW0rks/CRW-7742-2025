@@ -48,6 +48,20 @@ public final class Constants {
     }
 
     public static class AutoConstants {
+        public static final double FineAlignDrive_kP = 5;
+        public static final double FineAlignDrive_kI = 0;
+        public static final double FineAlignDrive_kD = 0;
+
+        public static final double FineAlignAngle_kP = 3;
+        public static final double FineAlignAngle_kI = 0;
+        public static final double FineAlignAngle_kD = 0;
+
+        public static final double FineAlignTolerance_Translation = 0.02; // Meters 
+        public static final double FineAlignTolerance_Rotation = (2 * Math.PI) / 120; // Radians
+
+        public static final double FineAlignMaxDriveSpeed = 2; // m/s
+        public static final double FineAlignMaxRotSpeed = 2 * Math.PI; // rad/s
+
         public static final double MaxDriveSpeed = 3; // m/s
         public static final double MaxDriveAccel = 10; // m/s^2
 

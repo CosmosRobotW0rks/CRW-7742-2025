@@ -25,6 +25,7 @@ import com.pathplanner.lib.controllers.PPLTVController;
 import com.pathplanner.lib.controllers.PathFollowingController;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.FlippingUtil;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -65,6 +66,7 @@ import frc.robot.Robot;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveConstants;
+import frc.robot.auto.commands.FineAlignCommand;
 import frc.robot.drivetrain.SwerveSubsystem;
 import frc.robot.util.Elastic;
 import frc.robot.util.Elastic.Notification.NotificationLevel;
@@ -203,14 +205,12 @@ public class AutoHelper {
 
     private Command DriveToPose(Pose2d p2d, boolean allianceOriented, double maxVelocityMPS, double maxAccelerationMPSSq, double maxAngularVelocityRadPerSec, double maxAngularAccelerationRadPerSecSq)
     {
-        // TODO: Implement fine-driving with PID (Photonvision pathfind does not work for small distances)
         PathConstraints constraints = new PathConstraints(maxVelocityMPS, maxAccelerationMPSSq, maxAngularVelocityRadPerSec, maxAngularAccelerationRadPerSecSq);
-
+        
         boolean flip = allianceOriented && IsRedAlliance();
+        p2d = flip ? FlippingUtil.flipFieldPose(p2d) : p2d;
 
-        Command cmd = flip ? AutoBuilder.pathfindToPoseFlipped(p2d, constraints) : AutoBuilder.pathfindToPose(p2d, constraints);
-
-        cmd = cmd.finallyDo(() -> swerve.Stop());
+        Command cmd = AutoBuilder.pathfindToPose(p2d, constraints).andThen(new FineAlignCommand(swerve, p2d));
 
         cmd.addRequirements(swerve);
 
