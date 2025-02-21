@@ -1,4 +1,4 @@
-package frc.robot.elevator;
+package frc.robot.shooter.elevator;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -12,10 +12,15 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import frc.robot.Robot;
 import frc.robot.Constants.ElevatorConstants;
+import frc.robot.shooter.elevator.commands.ElevatorGoToCommand;
 
 
 public class ElevatorSubsystem extends SubsystemBase  {
@@ -45,35 +50,71 @@ public class ElevatorSubsystem extends SubsystemBase  {
         controller = spark.getClosedLoopController();
 
         // TARGET CONFIG
+        targetMap.put(ElevatorTarget.IDLE, 0.0);
         targetMap.put(ElevatorTarget.CORALSTAT, ElevatorConstants.TARGET_CORALSTAT);
-        targetMap.put(ElevatorTarget.REEFL1, ElevatorConstants.TARGET_REEFL1);
-        targetMap.put(ElevatorTarget.REEFL2, ElevatorConstants.TARGET_REEFL2);
-        targetMap.put(ElevatorTarget.REEFL3, ElevatorConstants.TARGET_REEFL3);
-        targetMap.put(ElevatorTarget.REEFL4, ElevatorConstants.TARGET_REEFL4);
-        targetMap.put(ElevatorTarget.REEFALGAE1, ElevatorConstants.TARGET_REEFALGAE1);
-        targetMap.put(ElevatorTarget.REEFALGAE2, ElevatorConstants.TARGET_REEFALGAE2);
+        targetMap.put(ElevatorTarget.L1, ElevatorConstants.TARGET_REEFL1);
+        targetMap.put(ElevatorTarget.L2, ElevatorConstants.TARGET_REEFL2);
+        targetMap.put(ElevatorTarget.L3, ElevatorConstants.TARGET_REEFL3);
+        targetMap.put(ElevatorTarget.L4, ElevatorConstants.TARGET_REEFL4);
+        targetMap.put(ElevatorTarget.ALG1, ElevatorConstants.TARGET_REEFALGAE1);
+        targetMap.put(ElevatorTarget.ALG2, ElevatorConstants.TARGET_REEFALGAE2);
+
+
+        // SMARTDASHBOARD
+        SmartDashboard.putString("Elevator Target", target.name());
     }
 
-    public void SetTarget(double target)
+    ElevatorTarget target = ElevatorTarget.IDLE;
+    double targetSetTimestamp = 0;
+
+
+    public ElevatorTarget GetTarget()
     {
-        controller.setReference(target, ControlType.kPosition);
+        return target;
     }
 
     public void SetTarget(ElevatorTarget elevatorTarget)
     {
+        target = elevatorTarget;
+        targetSetTimestamp = Timer.getFPGATimestamp();
+
         SetTarget(targetMap.get(elevatorTarget));
     }
 
 
-    public boolean AtTarget(double target)
+    public boolean AtTarget(ElevatorTarget target)
+    {
+        if(Robot.isSimulation() && Timer.getFPGATimestamp() - targetSetTimestamp >= 2) return true;
+
+        return AtTarget(targetMap.get(target));
+    }
+
+    public Command GoToCommand(ElevatorTarget target)
+    {
+        return new ElevatorGoToCommand(this, target);
+    }
+
+    public Command SetTargetCommand(ElevatorTarget target)
+    {
+        return Commands.runOnce(() -> SetTarget(target), this);
+    }
+
+    private boolean AtTarget(double target)
     {
         double currentPos = encoder.getPosition();
 
         return Math.abs(target-currentPos) < ElevatorConstants.TargetTolerance;
     }
 
-    public boolean AtTarget(ElevatorTarget target)
+    private void SetTarget(double target)
     {
-        return AtTarget(targetMap.get(target));
+        controller.setReference(target, ControlType.kPosition);
+    }
+
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putString("Elevator Target", target.name());
+        SmartDashboard.putBoolean("Elevator At Target", AtTarget(target));
     }
 }

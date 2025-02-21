@@ -58,11 +58,11 @@ public class SwerveJoystickDriveCommand extends Command {
         double xpercent = suppX.get();
         double ypercent = suppY.get();
         double rotpercent = suppRot.get();
-/*
+
         xpercent = Math.pow(xpercent, 2) * Math.signum(xpercent);
         ypercent = Math.pow(ypercent, 2) * Math.signum(ypercent);
         rotpercent = Math.pow(rotpercent, 2) * Math.signum(rotpercent);
-*/
+
 
         if (deadzoneEnabled) {
             xpercent = ApplyDeadzone(xpercent, DriveConstants.JOYDeadzone_X);

@@ -106,6 +106,8 @@ public class SwerveSubsystem extends SubsystemBase {
         InitializeShortcutButtons();
     }
 
+
+    // TODO: Implement auto-stop when cs does not update for a cycle
     public void SetChassisSpeeds(ChassisSpeeds speeds) {
         chassisSpeeds = speeds;
 

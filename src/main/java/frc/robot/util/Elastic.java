@@ -38,6 +38,17 @@ public final class Elastic {
     }
   }
 
+
+  public static void SendWarning(String title, String text)
+  {
+    sendNotification(new Notification(Notification.NotificationLevel.WARNING, title, text));
+  }
+
+  public static void SendError(String title, String text)
+  {
+    sendNotification(new Notification(Notification.NotificationLevel.ERROR, title, text));
+  }
+
   /**
    * Selects the tab of the dashboard with the given name. If no tab matches the name, this will
    * have no effect on the widgets or tabs in view.

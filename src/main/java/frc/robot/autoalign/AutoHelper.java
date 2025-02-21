@@ -1,4 +1,4 @@
-package frc.robot.auto;
+package frc.robot.autoalign;
 
 import java.io.Serial;
 import java.lang.StackWalker.Option;
@@ -66,7 +66,7 @@ import frc.robot.Robot;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveConstants;
-import frc.robot.auto.commands.FineAlignCommand;
+import frc.robot.autoalign.commands.FineAlignCommand;
 import frc.robot.drivetrain.SwerveSubsystem;
 import frc.robot.util.Elastic;
 import frc.robot.util.Elastic.Notification.NotificationLevel;
@@ -91,24 +91,15 @@ public class AutoHelper {
         swerve = swerveSubsystem;
     }
 
-
     public Command AlignToCoralStation(CoralStation cs)
     {
-        int aprTagID = cs == CoralStation.Left ? 13 : 12;
-
-        Pose2d target = GetApriltagPose2D(aprTagID, AutoConstants.CoralStationOffset, Rotation2d.fromDegrees(180));
-
+        Pose2d target = GetCoralStationAlignPose(cs);
         return DriveToPose(target, true);
     }
 
     public Command AlignToReefSide(int sideIndex, ReefAlign ra)
     {
-        int blueAprTagID = blueReefAprTagIDs[sideIndex];
-        
-        Translation2d offset = AutoConstants.ReefAlignOffsets.get(ra);
-
-        Pose2d target = GetApriltagPose2D(blueAprTagID, offset, Rotation2d.fromDegrees(180));
-
+        Pose2d target = GetReefAlignPose(sideIndex, ra);
         return DriveToPose(target, true);
     }
 
@@ -156,21 +147,28 @@ public class AutoHelper {
         return index;
     }
 
-    public static int indexOfSmallest(int[] array){
-        int index = 0;
-        int min = array[index];
-    
-        for (int i = 1; i < array.length; i++){
-            if (array[i] <= min){
-            min = array[i];
-            index = i;
-            }
-        }
-            return index;
-    }
-
 
     // Helper functions
+
+    private Pose2d GetCoralStationAlignPose(CoralStation cs)
+    {
+        int aprTagID = cs == CoralStation.Left ? 13 : 12;
+
+        Pose2d target = GetApriltagPose2D(aprTagID, AutoConstants.CoralStationOffset, Rotation2d.fromDegrees(180));
+
+        return target;
+    }
+
+    private Pose2d GetReefAlignPose(int sideIndex, ReefAlign ra)
+    {
+        int blueAprTagID = blueReefAprTagIDs[sideIndex];
+        
+        Translation2d offset = AutoConstants.ReefAlignOffsets.get(ra);
+
+        Pose2d target = GetApriltagPose2D(blueAprTagID, offset, Rotation2d.fromDegrees(180));
+
+        return target;
+    }
 
     private boolean IsRedAlliance()
     {
@@ -210,7 +208,7 @@ public class AutoHelper {
         boolean flip = allianceOriented && IsRedAlliance();
         p2d = flip ? FlippingUtil.flipFieldPose(p2d) : p2d;
 
-        Command cmd = AutoBuilder.pathfindToPose(p2d, constraints).andThen(new FineAlignCommand(swerve, p2d));
+        Command cmd = AutoBuilder.pathfindToPose(p2d, constraints).finallyDo(() -> swerve.Stop()).andThen(new FineAlignCommand(swerve, p2d));
 
         cmd.addRequirements(swerve);
 
@@ -220,31 +218,6 @@ public class AutoHelper {
     private Command DriveToPose(Pose2d p2d, boolean allianceOriented)
     {
         return DriveToPose(p2d, allianceOriented, AutoConstants.MaxDriveSpeed, AutoConstants.MaxDriveAccel, AutoConstants.MaxRotSpeed, AutoConstants.MaxRotAccel);
-    }
-
-
-    // NOT TESTED YET!!
-    // TODO: Test it
-    // TODO: flip if required
-    private Command DriveToPath(PathPlannerPath path, boolean allianceOriented, double maxVelocityMPS, double maxAccelerationMPSSq, double maxAngularVelocityRadPerSec, double maxAngularAccelerationRadPerSecSq)
-    {
-
-        PathConstraints constraints = new PathConstraints(maxVelocityMPS, maxAccelerationMPSSq, maxAngularVelocityRadPerSec, maxAngularAccelerationRadPerSecSq);
-
-        //boolean flip = allianceOriented && FlipRequired();
-
-        Command cmd = AutoBuilder.pathfindThenFollowPath(path, constraints);
-
-        //cmd = cmd.finallyDo(() -> swerve.Stop());
-
-        cmd.addRequirements(swerve);
-
-        return cmd;
-    }
-
-    private Command DriveToPath(PathPlannerPath path, boolean allianceOriented)
-    {
-        return DriveToPath(path, allianceOriented, AutoConstants.MaxDriveSpeed, AutoConstants.MaxDriveAccel, AutoConstants.MaxRotSpeed, AutoConstants.MaxRotAccel);
     }
 
 

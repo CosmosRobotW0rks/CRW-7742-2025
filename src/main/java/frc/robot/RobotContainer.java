@@ -6,6 +6,7 @@ package frc.robot;
 
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
@@ -21,11 +22,14 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.auto.AutoHelper;
-import frc.robot.auto.AutoHelper.CoralStation;
-import frc.robot.auto.AutoHelper.ReefAlign;
+import frc.robot.autoalign.AutoHelper;
+import frc.robot.autoalign.AutoHelper.CoralStation;
+import frc.robot.autoalign.AutoHelper.ReefAlign;
 import frc.robot.drivetrain.SwerveSubsystem;
 import frc.robot.drivetrain.commands.SwerveJoystickDriveCommand;
+import frc.robot.shooter.commands.TakeCoralCommand;
+import frc.robot.shooter.elevator.ElevatorSubsystem;
+import frc.robot.shooter.elevator.ElevatorTarget;
 import frc.robot.util.Elastic;
 import frc.robot.util.Elastic.Notification;
 import frc.robot.util.Elastic.Notification.NotificationLevel;
@@ -35,41 +39,69 @@ public class RobotContainer {
 
   private final AutoHelper autoHelper;
 
-  private final SwerveSubsystem swerve;
+  private final SwerveSubsystem swerveSubsystem;
+  private final ElevatorSubsystem elevatorSubsystem;
 
   public RobotContainer() {
-    swerve = new SwerveSubsystem();
-    autoHelper = new AutoHelper(swerve);
+    swerveSubsystem = new SwerveSubsystem();
+    elevatorSubsystem = new ElevatorSubsystem();
+
+    autoHelper = new AutoHelper(swerveSubsystem);
 
     configureBindings();
   }
 
   private void configureBindings() {
-    swerve.setDefaultCommand(new SwerveJoystickDriveCommand(
-      swerve,
+    swerveSubsystem.setDefaultCommand(new SwerveJoystickDriveCommand(
+      swerveSubsystem,
       controller,
       () -> controller.getHID().getLeftX(),
       () -> controller.getHID().getLeftY(),
       () -> controller.getHID().getRightX(), 
       true
     ));
-
-    controller.leftTrigger().whileTrue(Commands.defer(() -> autoHelper.AlignToCoralStation(CoralStation.Left), Set.of()));
-    controller.rightTrigger().whileTrue(Commands.defer(() -> autoHelper.AlignToCoralStation(CoralStation.Right), Set.of()));
-
+    configureIntakeBindings();
+    
     controller.x().whileTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Left, 2), Set.of()));
     controller.y().whileTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Mid, 2), Set.of()));
     controller.b().whileTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Right, 2), Set.of()));
 
-    controller.a().toggleOnTrue(Commands.run(() -> SmartDashboard.putNumber("CLOSEST", autoHelper.GetClosestReefSideIndex(2))));
+    //controller.a().onChange(Commands.defer(() -> elevatorSubsystem.GoTo(elevatorSubsystem.GetTarget() == ElevatorTarget.IDLE ? ElevatorTarget.L4 : ElevatorTarget.IDLE), Set.of()));
   }
 
+  private void configureIntakeBindings()
+  {
+    controller.leftTrigger().whileTrue(autoHelper.AlignToCoralStation(CoralStation.Left).andThen(new TakeCoralCommand(elevatorSubsystem)));
+    controller.rightTrigger().whileTrue(autoHelper.AlignToCoralStation(CoralStation.Right).andThen(new TakeCoralCommand(elevatorSubsystem)));
+
+
+    /*
+    controller.leftTrigger().whileTrue(Commands.defer(() -> 
+
+    autoHelper.AlignToCoralStation(CoralStation.Left)
+    .andThen(elevatorSubsystem.GoToCommand(ElevatorTarget.CORALSTAT).finallyDo(() -> elevatorSubsystem.SetTarget(ElevatorTarget.IDLE))) // TODO: remove flicker
+    .andThen(elevatorSubsystem.SetTargetCommand(ElevatorTarget.IDLE))
+
+
+    , Set.of()));
+    controller.rightTrigger().whileTrue(Commands.defer(() -> 
+
+    autoHelper.AlignToCoralStation(CoralStation.Right)
+    .andThen(elevatorSubsystem.GoToCommand(ElevatorTarget.CORALSTAT))
+    .andThen(elevatorSubsystem.SetTargetCommand(ElevatorTarget.IDLE))
+
+    , Set.of()));
+
+    */
+  }
+
+
   public Command getAutonomousCommand() {
-    return (new PathPlannerAuto("TESTAUTO")).andThen(swerve.StopCommand());
+    return (new PathPlannerAuto("TESTAUTO")).andThen(swerveSubsystem.StopCommand());
   }
 
   public void StopDrivetrain()
   {
-    swerve.Stop();
+    swerveSubsystem.Stop();
   }
 }
