@@ -15,6 +15,7 @@ import com.ctre.phoenix6.controls.MotionMagicExpoDutyCycle;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.node.TreeTraversingParser;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -90,7 +91,7 @@ public class SwerveSubsystem extends SubsystemBase {
     ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0, 0, 0);
 
     SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, GetRobotHeading(),
-            GetModulePositions(), new Pose2d(0, 0, new Rotation2d(0)));
+            GetModulePositions(), new Pose2d(7.572, 4.025, new Rotation2d(0)));
 
     Vision vision = new Vision("AACAM");
     
@@ -112,25 +113,10 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public void SetFieldOrientedChassisSpeeds(ChassisSpeeds cs) {
-        Rotation2d heading = GetRobotHeading();
-        cs = ChassisSpeeds.fromFieldRelativeSpeeds(cs.vxMetersPerSecond, cs.vyMetersPerSecond, cs.omegaRadiansPerSecond, heading);
+
+        cs = ChassisSpeeds.fromFieldRelativeSpeeds(cs.vxMetersPerSecond, cs.vyMetersPerSecond, cs.omegaRadiansPerSecond, GetRobotHeading());
 
         SetChassisSpeeds(cs);
-    }
-
-    public Command DriveToPose(Pose2d p2d, boolean allianceOriented)
-    {
-        PathConstraints constraints = new PathConstraints(3, 4, Units.degreesToRadians(540), Units.degreesToRadians(720));
-
-        boolean flip = allianceOriented && DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
-
-        Command cmd = flip ? AutoBuilder.pathfindToPoseFlipped(p2d, constraints) : AutoBuilder.pathfindToPose(p2d, constraints);
-
-        cmd = cmd.finallyDo(() -> this.Stop());
-
-        cmd.addRequirements(this);
-
-        return cmd;
     }
 
     public Command StopCommand()
@@ -204,6 +190,8 @@ public class SwerveSubsystem extends SubsystemBase {
                         Optional<Alliance> alliance = DriverStation.getAlliance();
                         return alliance.isPresent() && alliance.get() == Alliance.Red;
                     }, this);
+
+            //PathfindingCommand.warmupCommand().schedule();
 
         } catch (Exception ex) {
             Elastic.sendNotification(new Elastic.Notification(NotificationLevel.ERROR,

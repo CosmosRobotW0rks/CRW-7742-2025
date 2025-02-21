@@ -21,6 +21,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.auto.AutoHelper;
+import frc.robot.auto.AutoHelper.CoralStation;
+import frc.robot.auto.AutoHelper.ReefAlign;
 import frc.robot.drivetrain.SwerveSubsystem;
 import frc.robot.drivetrain.commands.SwerveJoystickDriveCommand;
 import frc.robot.util.Elastic;
@@ -30,10 +33,13 @@ import frc.robot.util.Elastic.Notification.NotificationLevel;
 public class RobotContainer {
   private final CommandXboxController controller = new CommandXboxController(0);
 
+  private final AutoHelper autoHelper;
+
   private final SwerveSubsystem swerve;
 
   public RobotContainer() {
     swerve = new SwerveSubsystem();
+    autoHelper = new AutoHelper(swerve);
 
     configureBindings();
   }
@@ -48,7 +54,12 @@ public class RobotContainer {
       true
     ));
 
-    controller.a().whileTrue(Commands.defer(() -> swerve.DriveToPose(new Pose2d(1.289, 7.037, Rotation2d.fromDegrees(130)), true), Set.of()));
+    controller.leftTrigger().whileTrue(Commands.defer(() -> autoHelper.AlignToCoralStation(CoralStation.Left), Set.of()));
+    controller.rightTrigger().whileTrue(Commands.defer(() -> autoHelper.AlignToCoralStation(CoralStation.Right), Set.of()));
+
+    controller.x().whileTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Left, 2), Set.of()));
+    controller.y().whileTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Mid, 2), Set.of()));
+    controller.b().whileTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Right, 2), Set.of()));
   }
 
   public Command getAutonomousCommand() {
