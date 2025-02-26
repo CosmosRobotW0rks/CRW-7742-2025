@@ -20,6 +20,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -39,8 +40,11 @@ public class SwerveModule {
     private SparkClosedLoopController angleController;
     private SparkClosedLoopController driveController;
 
-    public SwerveModule(int AngleCANID, int DriveCANID) {
+    private AnalogEncoder absEncoder;
 
+
+    public SwerveModule(int AngleCANID, int DriveCANID, int absEncoderPort) {
+        absEncoder = new AnalogEncoder(absEncoderPort);
         angleSpark = new SparkMax(AngleCANID, MotorType.kBrushless);
         driveSpark = new SparkMax(DriveCANID, MotorType.kBrushless);
 
@@ -80,6 +84,8 @@ public class SwerveModule {
         driveEncoder = driveSpark.getEncoder();
         angleController = angleSpark.getClosedLoopController();
         driveController = driveSpark.getClosedLoopController();
+
+        ResetAngleWithAbsEncoder();
     }
 
     Rotation2d targetAngle = Rotation2d.kZero;
@@ -174,5 +180,14 @@ public class SwerveModule {
     public void UpdateSimPos()
     {
         simPosition += targetVelocity * 0.02;   
+    }
+
+    private void ResetAngleWithAbsEncoder()
+    {
+        double angle = absEncoder.get() * (2 * Math.PI);
+
+        angle *= SwerveConstants.ABSENCODER_INVERTED ? -1 : 1;
+
+        angleEncoder.setPosition(angle);
     }
 }

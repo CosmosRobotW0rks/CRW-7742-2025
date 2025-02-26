@@ -76,17 +76,17 @@ public class SwerveSubsystem extends SubsystemBase {
     public AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
 
     SwerveModule[] modules = new SwerveModule[] {
-            new SwerveModule(Constants.SwerveConstants.AngleCANID_FL, Constants.SwerveConstants.DriveCANID_FL),
-            new SwerveModule(Constants.SwerveConstants.AngleCANID_FR, Constants.SwerveConstants.DriveCANID_FR),
-            new SwerveModule(Constants.SwerveConstants.AngleCANID_BL, Constants.SwerveConstants.DriveCANID_BL),
-            new SwerveModule(Constants.SwerveConstants.AngleCANID_BR, Constants.SwerveConstants.DriveCANID_BR)
+            new SwerveModule(SwerveConstants.AngleCANID_FL, SwerveConstants.DriveCANID_FL, SwerveConstants.ABSENCPORTID_FL),
+            new SwerveModule(SwerveConstants.AngleCANID_FR, SwerveConstants.DriveCANID_FR, SwerveConstants.ABSENCPORTID_FR),
+            new SwerveModule(SwerveConstants.AngleCANID_BL, SwerveConstants.DriveCANID_BL, SwerveConstants.ABSENCPORTID_BL),
+            new SwerveModule(SwerveConstants.AngleCANID_BR, SwerveConstants.DriveCANID_BR, SwerveConstants.ABSENCPORTID_BR)
     };
 
     SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
-            new Translation2d(Constants.SwerveConstants.ModuleOffsetM_X, Constants.SwerveConstants.ModuleOffsetM_Y),
-            new Translation2d(Constants.SwerveConstants.ModuleOffsetM_X, -Constants.SwerveConstants.ModuleOffsetM_Y),
-            new Translation2d(-Constants.SwerveConstants.ModuleOffsetM_X, Constants.SwerveConstants.ModuleOffsetM_Y),
-            new Translation2d(-Constants.SwerveConstants.ModuleOffsetM_X, -Constants.SwerveConstants.ModuleOffsetM_Y));
+            new Translation2d(SwerveConstants.ModuleOffsetM_X, SwerveConstants.ModuleOffsetM_Y),
+            new Translation2d(SwerveConstants.ModuleOffsetM_X, -SwerveConstants.ModuleOffsetM_Y),
+            new Translation2d(-SwerveConstants.ModuleOffsetM_X, SwerveConstants.ModuleOffsetM_Y),
+            new Translation2d(-SwerveConstants.ModuleOffsetM_X, -SwerveConstants.ModuleOffsetM_Y));
 
     ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0, 0, 0);
 

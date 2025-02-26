@@ -128,6 +128,13 @@ public final class Constants {
         public static final int AngleCANID_BR = 7;
         public static final int DriveCANID_BR = 8;
 
+        public static final int ABSENCPORTID_FL = 0;
+        public static final int ABSENCPORTID_FR = 0;
+        public static final int ABSENCPORTID_BL = 0;
+        public static final int ABSENCPORTID_BR = 0;
+        public static final boolean ABSENCODER_INVERTED = false;
+        
+
 
     }
 }
