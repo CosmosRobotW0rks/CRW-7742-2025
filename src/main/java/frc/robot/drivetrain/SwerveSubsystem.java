@@ -97,6 +97,8 @@ public class SwerveSubsystem extends SubsystemBase {
     
     double estimatedRobotHeadingRad = 0;
 
+    double lastPoseUpdate = 0;
+
 
     public SwerveSubsystem() {
         SmartDashboard.putData("Estimated Pose", odomDisplay);
@@ -131,8 +133,12 @@ public class SwerveSubsystem extends SubsystemBase {
         SetChassisSpeeds(new ChassisSpeeds(0,0,0));
     }
 
-    public ChassisSpeeds GetChassisSpeeds() {
+    public ChassisSpeeds GetRobotRelativeChassisSpeeds() {
         return chassisSpeeds;
+    }
+
+    public ChassisSpeeds GetFieldRelativeChassisSpeeds() {
+        return ChassisSpeeds.fromRobotRelativeSpeeds(chassisSpeeds, GetRobotHeading());
     }
 
     public Rotation2d GetRobotHeading() {
@@ -179,13 +185,13 @@ public class SwerveSubsystem extends SubsystemBase {
             AutoBuilder.configure(
                     () -> GetRobotPose(),
                     p2d -> poseEstimator.resetPose(p2d),
-                    () -> GetChassisSpeeds(),
+                    () -> GetRobotRelativeChassisSpeeds(),
                     (ChassisSpeeds, DriveFeedforwards) -> SetChassisSpeeds(ChassisSpeeds),
                     new PPHolonomicDriveController(
                             // Translation PID constants
-                            new PIDConstants(5.0, 0.0, 0.0),
+                            new PIDConstants(1.0, 0.0, 0.0),
                             // Rotation PID constants
-                            new PIDConstants(5.0, 0.0, 0.0)
+                            new PIDConstants(1.0, 0.0, 0.0)
                     ),
                     config,
                     () -> {
@@ -219,7 +225,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
         Pose2d robotPose = poseEstimator.update(GetRobotHeading(), GetModulePositions());
         odomDisplay.setRobotPose(robotPose);
-
     }
 
     void ResetOdometryWithVision() {
@@ -229,6 +234,8 @@ public class SwerveSubsystem extends SubsystemBase {
             return;
 
         EstimatedRobotPose camPose = optPose.get();
+
+        lastPoseUpdate = Timer.getFPGATimestamp();
 
         poseEstimator.addVisionMeasurement(camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
     }
@@ -253,6 +260,7 @@ public class SwerveSubsystem extends SubsystemBase {
         swerveStatePublisher.set(GetModuleStates());
         posePublisher.set(GetRobotPose());
         SmartDashboard.putNumber("RobotHeading", GetRobotHeading().getDegrees());
+        SmartDashboard.putNumber("Odom Upd Elapsed", Math.floor((Timer.getFPGATimestamp() - lastPoseUpdate) * 100.0) / 100.0);
         
     }
 
