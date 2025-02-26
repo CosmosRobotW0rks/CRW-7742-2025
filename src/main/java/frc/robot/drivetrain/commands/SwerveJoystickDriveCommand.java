@@ -1,5 +1,6 @@
 package frc.robot.drivetrain.commands;
 
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
@@ -31,6 +32,19 @@ public class SwerveJoystickDriveCommand extends Command {
     SlewRateLimiter filterY = new SlewRateLimiter(DriveConstants.MaxDriveAccel);
     SlewRateLimiter filterRot = new SlewRateLimiter(DriveConstants.MaxRotAccel);
 
+
+    SlewRateLimiter[] accelFilters = new SlewRateLimiter[]{
+        new SlewRateLimiter(DriveConstants.MaxDriveAccel),
+        new SlewRateLimiter(DriveConstants.MaxDriveAccel),
+        new SlewRateLimiter(DriveConstants.MaxRotAccel)
+    };
+
+    SlewRateLimiter[] deccelFilters = new SlewRateLimiter[]{
+        new SlewRateLimiter(DriveConstants.MaxDriveDeccel),
+        new SlewRateLimiter(DriveConstants.MaxDriveDeccel),
+        new SlewRateLimiter(DriveConstants.MaxRotDeccel)
+    };
+
     public SwerveJoystickDriveCommand(SwerveSubsystem swerve, CommandXboxController j, Supplier<Double> xspeed, Supplier<Double> yspeed, Supplier<Double> rotspeed, boolean deadzoneEnabled) {
         this.swerve = swerve;
         this.deadzoneEnabled = deadzoneEnabled;
@@ -59,16 +73,17 @@ public class SwerveJoystickDriveCommand extends Command {
         double ypercent = suppY.get();
         double rotpercent = suppRot.get();
 
-        xpercent = Math.pow(xpercent, 2) * Math.signum(xpercent);
-        ypercent = Math.pow(ypercent, 2) * Math.signum(ypercent);
-        rotpercent = Math.pow(rotpercent, 2) * Math.signum(rotpercent);
-
-
         if (deadzoneEnabled) {
             xpercent = ApplyDeadzone(xpercent, DriveConstants.JOYDeadzone_X);
             ypercent = ApplyDeadzone(ypercent, DriveConstants.JOYDeadzone_Y);
             rotpercent = ApplyDeadzone(rotpercent, DriveConstants.JOYDeadzone_Rot);
         }
+
+        xpercent = Math.pow(xpercent, 3);// * Math.signum(xpercent);
+        ypercent = Math.pow(ypercent, 3);// * Math.signum(ypercent);
+        //rotpercent = Math.pow(rotpercent, 3);// * Math.signum(rotpercent);
+
+
 
         JoystickDrive(xpercent, ypercent, rotpercent);
 
@@ -101,26 +116,43 @@ public class SwerveJoystickDriveCommand extends Command {
         y =     y < -1 ? -1 : y   > 1 ? 1 : y;
         rot = rot < -1 ? -1 : rot > 1 ? 1 : rot;
 
+
+        double[] targetSpeeds = new double[]
+        {
+            -y * DriveConstants.MaxDriveSpeed,
+            -x * DriveConstants.MaxDriveSpeed,
+            -rot * DriveConstants.MaxRotSpeed
+        };
+
+
+        ChassisSpeeds frcs = swerve.GetRobotRelativeChassisSpeeds();
         
-        double targetXspeed = -y * DriveConstants.MaxDriveSpeed;
-        double targetYspeed = -x * DriveConstants.MaxDriveSpeed;
-        double targetRotSpeed = -rot * DriveConstants.MaxRotSpeed;
-
-        targetXspeed = filterX.calculate(targetXspeed);
-        targetYspeed = filterY.calculate(targetYspeed);
-        targetRotSpeed = filterRot.calculate(targetRotSpeed);
+        ApplyFilter(targetSpeeds, new double[] {frcs.vxMetersPerSecond, frcs.vyMetersPerSecond, frcs.omegaRadiansPerSecond});
 
 
-        if(xZero && yZero && rotZero && targetXspeed == 0 && targetYspeed == 0 && targetRotSpeed == 0) return;
+        if(xZero && yZero && rotZero && targetSpeeds[0] == 0 && targetSpeeds[1] == 0 && targetSpeeds[2] == 0) return;
 
 
-        xZero = targetXspeed == 0;
-        yZero = targetYspeed == 0;
-        rotZero = targetRotSpeed == 0;
+        xZero = targetSpeeds[0] == 0;
+        yZero = targetSpeeds[1] == 0;
+        rotZero = targetSpeeds[2] == 0;
 
-        ChassisSpeeds cs = new ChassisSpeeds(targetXspeed, targetYspeed, targetRotSpeed);
+        ChassisSpeeds cs = new ChassisSpeeds(targetSpeeds[0],targetSpeeds[1],targetSpeeds[2]);
 
         swerve.SetFieldOrientedChassisSpeeds(cs);
+
+    }
+
+    void ApplyFilter(double[] targetSpeeds, double[] prevSpeeds)
+    {
+        for(int i = 0; i<3; i++)
+        {
+            double incSpeed = accelFilters[i].calculate(targetSpeeds[i]);
+            double descSpeed = deccelFilters[i].calculate(targetSpeeds[i]);
+
+            if(prevSpeeds[i] < targetSpeeds[i]) targetSpeeds[i] = incSpeed;
+            else targetSpeeds[i] = descSpeed;
+        }
     }
 
     
