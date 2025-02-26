@@ -59,11 +59,11 @@ public final class Constants {
         public static final double FineAlignTolerance_Translation = 0.02; // Meters 
         public static final double FineAlignTolerance_Rotation = (2 * Math.PI) / 120; // Radians
 
-        public static final double FineAlignMaxDriveSpeed = 2; // m/s
+        public static final double FineAlignMaxDriveSpeed = 1; // m/s
         public static final double FineAlignMaxRotSpeed = 2 * Math.PI; // rad/s
 
-        public static final double MaxDriveSpeed = 3; // m/s
-        public static final double MaxDriveAccel = 10; // m/s^2
+        public static final double MaxDriveSpeed = 1; // m/s
+        public static final double MaxDriveAccel = 3; // m/s^2
 
         public static final double MaxRotSpeed = Math.PI * 2 * 2; // rad/s
         public static final double MaxRotAccel = Math.PI * 2 * 6; // rad/s^2
@@ -81,11 +81,14 @@ public final class Constants {
 
     public static class DriveConstants {
         
-        public static final double MaxDriveSpeed = 2; // m/s
+        public static final double MaxDriveSpeed = 3; // m/s
         public static final double MaxDriveAccel = 5; // m/s^2
+        public static final double MaxDriveDeccel = 8; // m/s^2
 
         public static final double MaxRotSpeed = Math.PI * 2 * 0.5; // rad/s
         public static final double MaxRotAccel = Math.PI * 2 * 6; // rad/s^2
+        public static final double MaxRotDeccel = Math.PI * 2 * 6; // rad/s^2
+        
 
         public static final double JOYDeadzone_X = 0.1;
         public static final double JOYDeadzone_Y = 0.1;
