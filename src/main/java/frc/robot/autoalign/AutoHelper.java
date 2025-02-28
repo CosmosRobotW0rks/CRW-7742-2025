@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -49,6 +50,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SPI;
@@ -66,8 +68,11 @@ import frc.robot.Robot;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveConstants;
+import frc.robot.autoalign.commands.ExecuteWhenNearPosition;
 import frc.robot.autoalign.commands.FineAlignCommand;
 import frc.robot.drivetrain.SwerveSubsystem;
+import frc.robot.shooter.commands.TakeCoralCommand;
+import frc.robot.shooter.elevator.ElevatorSubsystem;
 import frc.robot.util.Elastic;
 import frc.robot.util.Elastic.Notification.NotificationLevel;
 
@@ -77,6 +82,7 @@ public class AutoHelper {
     final int[] redReefAprTagIDs = { 10,9,8,7,6,11 };
 
     private final SwerveSubsystem swerve;
+    private final ElevatorSubsystem elevator;
 
     AprilTagFieldLayout apriltagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
@@ -86,15 +92,24 @@ public class AutoHelper {
             StructPublisher<Pose2d> offsetPosePub = NetworkTableInstance.getDefault()
                     .getStructTopic("OffsetPose", Pose2d.struct).publish();
 
-    public AutoHelper(SwerveSubsystem swerveSubsystem)
+    public AutoHelper(SwerveSubsystem swerveSubsystem, ElevatorSubsystem elevatorSubsystem)
     {
         swerve = swerveSubsystem;
+        elevator = elevatorSubsystem;
+
     }
 
     public Command AlignToCoralStation(CoralStation cs)
     {
         Pose2d target = GetCoralStationAlignPose(cs);
         return DriveToPose(target, true);
+    }
+
+    public Command AlignAndTakeCoral(CoralStation cs)
+    {
+        Translation2d target = GetCoralStationAlignPose(cs).getTranslation();
+
+        return Commands.defer(() -> AlignToCoralStation(cs).alongWith(WaitUntilNearPosition(target, 1).andThen(new TakeCoralCommand(elevator))), Set.of());
     }
 
     public Command AlignToReefSide(int sideIndex, ReefAlign ra)
@@ -145,6 +160,28 @@ public class AutoHelper {
         if(minDistance > maxDistance) return -1;
 
         return index;
+    }
+
+    public boolean NearFieldPosition(Translation2d pos, double tolerance)
+    {
+        double dist = pos.getDistance(swerve.GetRobotPose().getTranslation());
+
+        return Math.abs(dist) < Math.abs(tolerance);
+    }
+
+    public Command ExecuteOnceWhenNearPosition(Translation2d pos, double tolerance, Runnable action)
+    {
+        return new ExecuteWhenNearPosition(this, pos, tolerance, action, true);
+    }
+
+    public Command ExecuteDuringNearPosition(Translation2d pos, double tolerance, Runnable action)
+    {
+        return new ExecuteWhenNearPosition(this, pos, tolerance, action, false);
+    }
+
+    public Command WaitUntilNearPosition(Translation2d pos, double tolerance)
+    {
+        return new ExecuteWhenNearPosition(this, pos, tolerance, true);
     }
 
 

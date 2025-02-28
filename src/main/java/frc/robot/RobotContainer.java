@@ -46,7 +46,7 @@ public class RobotContainer {
     swerveSubsystem = new SwerveSubsystem();
     elevatorSubsystem = new ElevatorSubsystem();
 
-    autoHelper = new AutoHelper(swerveSubsystem);
+    autoHelper = new AutoHelper(swerveSubsystem, elevatorSubsystem);
 
     configureBindings();
   }
@@ -71,8 +71,8 @@ public class RobotContainer {
 
   private void configureIntakeBindings()
   {
-    controller.leftTrigger().whileTrue(autoHelper.AlignToCoralStation(CoralStation.Left).andThen(new TakeCoralCommand(elevatorSubsystem)));
-    controller.rightTrigger().whileTrue(autoHelper.AlignToCoralStation(CoralStation.Right).andThen(new TakeCoralCommand(elevatorSubsystem)));
+    controller.leftTrigger().whileTrue(autoHelper.AlignAndTakeCoral(CoralStation.Left));
+    controller.rightTrigger().whileTrue(autoHelper.AlignAndTakeCoral(CoralStation.Right));
 
 
     /*
