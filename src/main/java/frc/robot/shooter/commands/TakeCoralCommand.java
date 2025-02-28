@@ -1,7 +1,6 @@
 package frc.robot.shooter.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.autoalign.AutoHelper.CoralStation;
 import frc.robot.shooter.elevator.ElevatorSubsystem;
 import frc.robot.shooter.elevator.ElevatorTarget;
 import frc.robot.util.Elastic;

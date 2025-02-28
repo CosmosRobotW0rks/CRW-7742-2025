@@ -1,13 +1,8 @@
 package frc.robot.autoalign.commands;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.AutoConstants;
 import frc.robot.autoalign.AutoHelper;
-import frc.robot.drivetrain.SwerveSubsystem;
 
 public class ExecuteWhenNearPosition extends Command {
     private final AutoHelper autoHelper;

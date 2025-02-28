@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Meters;
-
 import java.util.HashMap;
 
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -13,7 +11,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
 import frc.robot.autoalign.AutoHelper.ReefAlign;
 
 public final class Constants {
