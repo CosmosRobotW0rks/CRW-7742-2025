@@ -62,10 +62,10 @@ public final class Constants {
         public static final double FineAlignMaxDriveSpeed = 1; // m/s
         public static final double FineAlignMaxRotSpeed = 2 * Math.PI; // rad/s
 
-        public static final double MaxDriveSpeed = 1; // m/s
-        public static final double MaxDriveAccel = 3; // m/s^2
+        public static final double MaxDriveSpeed = 2.5; // m/s
+        public static final double MaxDriveAccel = 5; // m/s^2
 
-        public static final double MaxRotSpeed = Math.PI * 2 * 2; // rad/s
+        public static final double MaxRotSpeed = Math.PI * 2 * 3; // rad/s
         public static final double MaxRotAccel = Math.PI * 2 * 6; // rad/s^2
 
         
@@ -128,10 +128,10 @@ public final class Constants {
         public static final int AngleCANID_BR = 7;
         public static final int DriveCANID_BR = 8;
 
-        public static final int ABSENCPORTID_FL = 0;
-        public static final int ABSENCPORTID_FR = 0;
-        public static final int ABSENCPORTID_BL = 0;
-        public static final int ABSENCPORTID_BR = 0;
+        public static final int ABSENCPORTID_FL = 1;
+        public static final int ABSENCPORTID_FR = 2;
+        public static final int ABSENCPORTID_BL = 3;
+        public static final int ABSENCPORTID_BR = 4;
         public static final boolean ABSENCODER_INVERTED = false;
         
 
