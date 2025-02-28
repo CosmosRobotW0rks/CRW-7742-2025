@@ -63,7 +63,7 @@ public class RobotContainer {
     configureIntakeBindings();
     
     controller.x().whileTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Left, 2), Set.of()));
-    controller.y().whileTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Mid, 2), Set.of()));
+    controller.y().whileTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Center, 2), Set.of()));
     controller.b().whileTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Right, 2), Set.of()));
 
     //controller.a().onChange(Commands.defer(() -> elevatorSubsystem.GoTo(elevatorSubsystem.GetTarget() == ElevatorTarget.IDLE ? ElevatorTarget.L4 : ElevatorTarget.IDLE), Set.of()));

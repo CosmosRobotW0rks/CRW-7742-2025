@@ -73,7 +73,7 @@ public final class Constants {
 
         public static final HashMap<ReefAlign, Translation2d> ReefAlignOffsets = new HashMap<ReefAlign, Translation2d>() {{
             put(ReefAlign.Left, new Translation2d(0.5, -0.2));
-            put(ReefAlign.Mid, new Translation2d(0.5, 0));
+            put(ReefAlign.Center, new Translation2d(0.5, 0));
             put(ReefAlign.Right, new Translation2d(0.5, 0.2));
         }};
 
