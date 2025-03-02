@@ -218,7 +218,6 @@ public class AutoHelper {
     public enum ReefAlign
     {
         Left,
-        Center,
         Right
     }
 }

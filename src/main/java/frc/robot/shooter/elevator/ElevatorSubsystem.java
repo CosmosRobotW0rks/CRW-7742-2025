@@ -40,8 +40,8 @@ public class ElevatorSubsystem extends SubsystemBase  {
         config.idleMode(IdleMode.kBrake);
 
         config.closedLoop.pid(ElevatorConstants.PID_P, ElevatorConstants.PID_I, ElevatorConstants.PID_D);
-
-        config.encoder.positionConversionFactor(ElevatorConstants.PCF);
+        config.closedLoop.maxMotion.maxAcceleration(ElevatorConstants.MaxAccel);
+        config.closedLoop.maxMotion.maxVelocity(ElevatorConstants.MaxVelocity);
 
         spark.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -55,8 +55,6 @@ public class ElevatorSubsystem extends SubsystemBase  {
         targetMap.put(ElevatorTarget.L2, ElevatorConstants.TARGET_REEFL2);
         targetMap.put(ElevatorTarget.L3, ElevatorConstants.TARGET_REEFL3);
         targetMap.put(ElevatorTarget.L4, ElevatorConstants.TARGET_REEFL4);
-        targetMap.put(ElevatorTarget.ALG1, ElevatorConstants.TARGET_REEFALGAE1);
-        targetMap.put(ElevatorTarget.ALG2, ElevatorConstants.TARGET_REEFALGAE2);
 
 
         // SMARTDASHBOARD
@@ -64,6 +62,7 @@ public class ElevatorSubsystem extends SubsystemBase  {
     }
 
     ElevatorTarget target = ElevatorTarget.IDLE;
+
     double targetSetTimestamp = 0;
 
 
@@ -80,7 +79,6 @@ public class ElevatorSubsystem extends SubsystemBase  {
         SetTarget(targetMap.get(elevatorTarget));
     }
 
-
     public boolean AtTarget(ElevatorTarget target)
     {
         if(Robot.isSimulation() && Timer.getFPGATimestamp() - targetSetTimestamp >= 2) return true;
@@ -90,6 +88,8 @@ public class ElevatorSubsystem extends SubsystemBase  {
 
     public Command GoToCommand(ElevatorTarget target)
     {
+        if(target == null) return null;
+
         return new ElevatorGoToCommand(this, target);
     }
 

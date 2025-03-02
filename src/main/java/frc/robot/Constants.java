@@ -21,26 +21,41 @@ public final class Constants {
         public static final Transform3d RobotToCam = new Transform3d(new Translation3d(0.35, 0.0, 0.15), new Rotation3d(0,45,0));
     }
 
+    public static class ShooterConstants {
+        
+        public static final int CANID = 100;
+
+        public static final double PIDF_P = 0.00001;
+        public static final double PIDF_I = 0;
+        public static final double PIDF_D = 0;
+        public static final double PIDF_F = 0.00021;
+
+        public static final double IntakeVelocity = 150;
+        public static final double OuttakeVelocity = 150;
+
+        public static final double IntakeThresholdVelocity = 50; // Velocity < X RPM = Coral In
+        public static final double OuttakeThresholdVelocity = 100; // Velocity > X RPM = Coral Out
+
+    }
+
     public static class ElevatorConstants {
 
-        public static final int CANID = 0;
+        public static final int CANID = 101;
 
-        public static final double PID_P = 0;
+        public static final double MaxAccel = 2000;
+        public static final double MaxVelocity = 500;
+        public static final double PID_P = 0.1;
         public static final double PID_I = 0;
         public static final double PID_D = 0;
-        
-        public static final double PCF = 0;
 
         public static final double TargetTolerance = 0;
         public static final double TargetTimeoutS = 0;
 
-        public static final double TARGET_CORALSTAT = 0;
+        public static final double TARGET_CORALSTAT = 5;
         public static final double TARGET_REEFL1 = 0;
         public static final double TARGET_REEFL2 = 0;
         public static final double TARGET_REEFL3 = 0;
-        public static final double TARGET_REEFL4 = 0;
-        public static final double TARGET_REEFALGAE1 = 0;
-        public static final double TARGET_REEFALGAE2 = 0;
+        public static final double TARGET_REEFL4 = 20;
 
     }
 
@@ -70,7 +85,6 @@ public final class Constants {
 
         public static final HashMap<ReefAlign, Translation2d> ReefAlignOffsets = new HashMap<ReefAlign, Translation2d>() {{
             put(ReefAlign.Left, new Translation2d(0.5, -0.2));
-            put(ReefAlign.Center, new Translation2d(0.5, 0));
             put(ReefAlign.Right, new Translation2d(0.5, 0.2));
         }};
 

@@ -6,7 +6,10 @@ public enum ElevatorTarget{
     L1,
     L2,
     L3,
-    L4,
-    ALG1,
-    ALG2
+    L4;
+
+
+    public boolean IsReefTarget(){
+        return this == L1 || this == L2 || this == L3 || this == L4;
+    }
 }

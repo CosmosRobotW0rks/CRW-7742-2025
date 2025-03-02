@@ -27,10 +27,12 @@ public class ElevatorGoToCommand extends Command {
 
     @Override
     public void end(boolean interrupted) {
+        System.out.printf("ElevatorGoToCommand end: %d\n", interrupted ? 1 : 0);
     }
 
     @Override
     public boolean isFinished() {
-        return _elevator.AtTarget(_target);
+        boolean atTarget = _elevator.AtTarget(_target);
+        return atTarget;
     }
 }
