@@ -107,7 +107,7 @@ public class ElevatorSubsystem extends SubsystemBase  {
 
     private void SetTarget(double target)
     {
-        controller.setReference(target, ControlType.kPosition);
+        controller.setReference(target, ControlType.kMAXMotionPositionControl);
     }
 
 
