@@ -88,7 +88,7 @@ public class ElevatorSubsystem extends SubsystemBase  {
 
     public Command GoToCommand(ElevatorTarget target)
     {
-        if(target == null) return null;
+        if(target == null) return Commands.none();
 
         return new ElevatorGoToCommand(this, target);
     }

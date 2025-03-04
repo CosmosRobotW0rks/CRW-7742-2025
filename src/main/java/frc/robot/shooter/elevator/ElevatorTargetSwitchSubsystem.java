@@ -28,7 +28,6 @@ public class ElevatorTargetSwitchSubsystem extends SubsystemBase {
     {
         target = 0;
         UpdateDashboard(true);
-        lastInteraction = Timer.getFPGATimestamp();
     }
 
     public void IncreaseTarget()
@@ -37,8 +36,8 @@ public class ElevatorTargetSwitchSubsystem extends SubsystemBase {
 
         if(target == 4) target = 0;
         
-        UpdateDashboard();
         lastInteraction = Timer.getFPGATimestamp();
+        UpdateDashboard();
     }
 
     public void DecreaseTarget()
@@ -48,8 +47,8 @@ public class ElevatorTargetSwitchSubsystem extends SubsystemBase {
         if(target == -1) target = 3;
 
 
-        UpdateDashboard();
         lastInteraction = Timer.getFPGATimestamp();
+        UpdateDashboard();
     }
 
     public ElevatorTarget GetTarget(boolean reset)
