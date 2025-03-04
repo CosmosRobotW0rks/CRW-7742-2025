@@ -32,24 +32,24 @@ public final class Constants {
 
     public static class ShooterConstants {
         
-        public static final int CANID = 100;
+        public static final int CANID = 11;
 
         public static final double PIDF_P = 0.00001;
         public static final double PIDF_I = 0;
         public static final double PIDF_D = 0;
         public static final double PIDF_F = 0.00021;
 
-        public static final double IntakeVelocity = 150;
-        public static final double OuttakeVelocity = 150;
+        public static final double IntakeVelocity = -150;
+        public static final double OuttakeVelocity = -300;
 
-        public static final double IntakeThresholdVelocity = 50; // Velocity < X RPM = Coral In
-        public static final double OuttakeThresholdVelocity = 100; // Velocity > X RPM = Coral Out
+        public static final double IntakeThresholdVelocity = 0; // abs Velocity < X RPM = Coral In
+        public static final double OuttakeThresholdVelocity = 0; // abs Velocity > X RPM = Coral Out
 
     }
 
     public static class ElevatorConstants {
 
-        public static final int CANID = 101;
+        public static final int CANID = 10;
 
         public static final double MaxAccel = 2000;
         public static final double MaxVelocity = 500;
@@ -57,14 +57,14 @@ public final class Constants {
         public static final double PID_I = 0;
         public static final double PID_D = 0;
 
-        public static final double TargetTolerance = 0;
+        public static final double TargetTolerance = 0.1;
         public static final double TargetTimeoutS = 0;
 
-        public static final double TARGET_CORALSTAT = 5;
+        public static final double TARGET_CORALSTAT = 2;
         public static final double TARGET_REEFL1 = 0;
         public static final double TARGET_REEFL2 = 0;
-        public static final double TARGET_REEFL3 = 0;
-        public static final double TARGET_REEFL4 = 20;
+        public static final double TARGET_REEFL3 = 20;
+        public static final double TARGET_REEFL4 = 18;
 
     }
 
@@ -146,7 +146,7 @@ public final class Constants {
         public static final int DriveCANID_BL = 6;
 
         public static final int AngleCANID_BR = 7;
-        public static final int DriveCANID_BR = 8;
+        public static final int DriveCANID_BR = 9;
 
         public static final int ABSENCPORTID_FL = 1;
         public static final int ABSENCPORTID_FR = 2;
