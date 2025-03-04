@@ -21,6 +21,15 @@ public final class Constants {
         public static final Transform3d RobotToCam = new Transform3d(new Translation3d(0.35, 0.0, 0.15), new Rotation3d(0,45,0));
     }
 
+    public static class ClimbConstants {
+        public static final int PCM_CANID = 123;
+
+        public static final int SolenoidChannel = 0;
+
+        
+        public static final double drivetrainSpeedCoeff = 1/3;
+    }
+
     public static class ShooterConstants {
         
         public static final int CANID = 100;

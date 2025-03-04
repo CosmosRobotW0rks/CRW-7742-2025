@@ -17,6 +17,8 @@ public class SwerveJoystickDriveCommand extends Command {
     CommandXboxController _j;
 
     final Supplier<Double> suppX, suppY, suppRot;
+    final Supplier<Double> suppCoeff;
+
     final boolean deadzoneEnabled;
 
     SlewRateLimiter filterX = new SlewRateLimiter(DriveConstants.MaxDriveAccel);
@@ -36,13 +38,14 @@ public class SwerveJoystickDriveCommand extends Command {
         new SlewRateLimiter(DriveConstants.MaxRotDeccel)
     };
 
-    public SwerveJoystickDriveCommand(SwerveSubsystem swerve, CommandXboxController j, Supplier<Double> xspeed, Supplier<Double> yspeed, Supplier<Double> rotspeed, boolean deadzoneEnabled) {
+    public SwerveJoystickDriveCommand(SwerveSubsystem swerve, CommandXboxController j, Supplier<Double> xspeed, Supplier<Double> yspeed, Supplier<Double> rotspeed, Supplier<Double> speedCoeff, boolean deadzoneEnabled) {
         this.swerve = swerve;
         this.deadzoneEnabled = deadzoneEnabled;
 
         this.suppX = xspeed;
         this.suppY = yspeed;
         this.suppRot = rotspeed;
+        this.suppCoeff = speedCoeff;
 
         _j = j;
 
@@ -110,9 +113,9 @@ public class SwerveJoystickDriveCommand extends Command {
 
         double[] targetSpeeds = new double[]
         {
-            -y * DriveConstants.MaxDriveSpeed,
-            -x * DriveConstants.MaxDriveSpeed,
-            -rot * DriveConstants.MaxRotSpeed
+            -y * DriveConstants.MaxDriveSpeed * suppCoeff.get(),
+            -x * DriveConstants.MaxDriveSpeed * suppCoeff.get(),
+            -rot * DriveConstants.MaxRotSpeed * suppCoeff.get()
         };
 
 

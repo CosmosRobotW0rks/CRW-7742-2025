@@ -6,6 +6,7 @@ package frc.robot;
 
 import java.util.Set;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
@@ -13,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.ClimbConstants;
 import frc.robot.autoalign.AutoHelper;
 import frc.robot.autoalign.AutoHelper.CoralStation;
 import frc.robot.autoalign.AutoHelper.ReefAlign;
@@ -36,6 +38,8 @@ public class RobotContainer {
 
   private final ShooterSubsystem shooterSubsystem;
 
+  private final Supplier<Double> drivetrainSpeedCoeffSupplier;
+
   public ControlMode CM = ControlMode.CM_DEFAULT;
 
   public RobotContainer() {
@@ -45,6 +49,8 @@ public class RobotContainer {
     shooterSubsystem = new ShooterSubsystem();
 
     autoHelper = new AutoHelper(swerveSubsystem, elevatorSubsystem);
+
+    drivetrainSpeedCoeffSupplier = () -> CM == ControlMode.CM_CLIMB ? ClimbConstants.drivetrainSpeedCoeff : 1;
 
     configureBindings();
   }
@@ -57,11 +63,17 @@ public class RobotContainer {
       () -> controller.getHID().getLeftX(),
       () -> controller.getHID().getLeftY(),
       () -> controller.getHID().getRightX(), 
+      drivetrainSpeedCoeffSupplier,
       true
     ));
 
     configureIntakeBindings();
     configureReefBindings();
+  }
+
+  private void configureClimbBindings()
+  {
+    
   }
 
   private void configureIntakeBindings()
