@@ -50,10 +50,22 @@ public class ShooterSubsystem extends SubsystemBase  {
         controller = spark.getClosedLoopController();
     }
 
-
-    private void SetMode(ShooterMode mode)
+    public boolean IntakeCompleted()
     {
-        this.mode = mode;
+        return IsIntakeComplete;
+    }
+
+    public boolean OuttakeCompleted()
+    {
+        return IsIntakeComplete;
+    }
+
+
+    public void SetMode(ShooterMode newmode)
+    {
+        this.mode = newmode;
+
+        System.out.printf("NEW MODE: %s", mode.toString());
         
         if(mode == ShooterMode.INTAKE) IsIntakeComplete = false;
         if(mode == ShooterMode.OUTTAKE) IsOuttakeComplete = false;
@@ -70,7 +82,7 @@ public class ShooterSubsystem extends SubsystemBase  {
 
             @Override
             public boolean isFinished() {
-                return IsIntakeComplete;
+                return false;
             }
 
             @Override
@@ -86,17 +98,19 @@ public class ShooterSubsystem extends SubsystemBase  {
             
             @Override
             public void initialize() {
+                System.out.println("SHOOT COMMAND INIT");
                 SetMode(ShooterMode.OUTTAKE);
             }
 
             @Override
             public boolean isFinished() {
-                return IsOuttakeComplete;
+                return false;
             }
 
             @Override
             public void end(boolean interrupted) {
                 SetMode(ShooterMode.IDLE);
+                System.out.printf("SHOOT COMMAND END // Interrupted: %d\n", interrupted ? 1 : 0);
             }
         };
     }
@@ -115,28 +129,33 @@ public class ShooterSubsystem extends SubsystemBase  {
                 OuttakePeriodic();
                 break;
         }
+
+        SmartDashboard.putString("Shooter State", mode.toString());
     }
 
     private void IntakePeriodic()
     {
-        controller.setReference(ShooterConstants.IntakeVelocity, ControlType.kVelocity);
+        controller.setReference(ShooterConstants.MaxIntakeVelocity, ControlType.kVelocity);
 
-        if(encoder.getVelocity() < ShooterConstants.IntakeThresholdVelocity)
+        /*
+        if(Math.abs(encoder.getVelocity()) < ShooterConstants.IntakeThresholdVelocity)
         {
             IsIntakeComplete = true;
             SetMode(ShooterMode.IDLE);
         }
+            */
     }
 
     private void OuttakePeriodic()
     {
-        controller.setReference(ShooterConstants.OuttakeVelocity, ControlType.kVelocity);
-
-        if(encoder.getVelocity() > ShooterConstants.OuttakeThresholdVelocity)
+        controller.setReference(ShooterConstants.MaxOuttakeVelocity, ControlType.kVelocity);
+/* 
+        if(Math.abs(encoder.getVelocity()) > ShooterConstants.OuttakeThresholdVelocity)
         {
             IsOuttakeComplete = true;
             SetMode(ShooterMode.IDLE);
         }
+            */
     }
 
 

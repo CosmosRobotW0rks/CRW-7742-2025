@@ -35,7 +35,7 @@ public class SwerveModule {
     private AnalogEncoder absEncoder;
 
 
-    public SwerveModule(int AngleCANID, int DriveCANID, int absEncoderPort) {
+    public SwerveModule(int AngleCANID, int DriveCANID, int absEncoderPort, double absEncoderOffset) {
         absEncoder = new AnalogEncoder(absEncoderPort);
         angleSpark = new SparkMax(AngleCANID, MotorType.kBrushless);
         driveSpark = new SparkMax(DriveCANID, MotorType.kBrushless);
@@ -55,7 +55,7 @@ public class SwerveModule {
         SmartDashboard.putNumber("Drive VCF", driveVCF);
         SmartDashboard.putNumber("Angle PCF", anglePCF);
 
-        angleConfig.idleMode(IdleMode.kBrake);
+        angleConfig.idleMode(IdleMode.kCoast);
         driveConfig.idleMode(IdleMode.kBrake);
 
         angleConfig.closedLoop.pid(SwerveConstants.AnglePID_P, SwerveConstants.AnglePID_I, SwerveConstants.AnglePID_D);
@@ -77,7 +77,7 @@ public class SwerveModule {
         angleController = angleSpark.getClosedLoopController();
         driveController = driveSpark.getClosedLoopController();
 
-        ResetAngleWithAbsEncoder();
+        ResetAngleWithAbsEncoder(absEncoderOffset);
     }
 
     Rotation2d targetAngle = Rotation2d.kZero;
@@ -174,12 +174,19 @@ public class SwerveModule {
         simPosition += targetVelocity * 0.02;   
     }
 
-    private void ResetAngleWithAbsEncoder()
+    private void ResetAngleWithAbsEncoder(double offsetDeg)
     {
-        double angle = absEncoder.get() * (2 * Math.PI);
+        Rotation2d offset = Rotation2d.fromDegrees(offsetDeg);
+        Rotation2d absEnc = GetAbsEncoderReading();
 
-        angle *= SwerveConstants.ABSENCODER_INVERTED ? -1 : 1;
+        double moduleAngleRad = absEnc.getRadians() - offset.getRadians();
 
-        angleEncoder.setPosition(angle);
+        //angleEncoder.setPosition(moduleAngleRad);
+    }
+
+    public Rotation2d GetAbsEncoderReading()
+    {
+        return Rotation2d.fromRotations(absEncoder.get());
+   
     }
 }

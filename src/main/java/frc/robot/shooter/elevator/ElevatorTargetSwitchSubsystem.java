@@ -27,6 +27,7 @@ public class ElevatorTargetSwitchSubsystem extends SubsystemBase {
     public void TerminateAlignment()
     {
         target = 0;
+        lastInteraction = -5;
         UpdateDashboard(true);
     }
 

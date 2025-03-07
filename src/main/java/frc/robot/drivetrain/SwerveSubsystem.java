@@ -4,9 +4,11 @@ import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.util.FlippingUtil;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -48,10 +50,10 @@ public class SwerveSubsystem extends SubsystemBase {
     public AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
 
     SwerveModule[] modules = new SwerveModule[] {
-            new SwerveModule(SwerveConstants.AngleCANID_FL, SwerveConstants.DriveCANID_FL, SwerveConstants.ABSENCPORTID_FL),
-            new SwerveModule(SwerveConstants.AngleCANID_FR, SwerveConstants.DriveCANID_FR, SwerveConstants.ABSENCPORTID_FR),
-            new SwerveModule(SwerveConstants.AngleCANID_BL, SwerveConstants.DriveCANID_BL, SwerveConstants.ABSENCPORTID_BL),
-            new SwerveModule(SwerveConstants.AngleCANID_BR, SwerveConstants.DriveCANID_BR, SwerveConstants.ABSENCPORTID_BR)
+            new SwerveModule(SwerveConstants.AngleCANID_FL, SwerveConstants.DriveCANID_FL, SwerveConstants.ABSENCPORTID_FL, SwerveConstants.ABSENCOFFSET_FL),
+            new SwerveModule(SwerveConstants.AngleCANID_FR, SwerveConstants.DriveCANID_FR, SwerveConstants.ABSENCPORTID_FR, SwerveConstants.ABSENCOFFSET_FR),
+            new SwerveModule(SwerveConstants.AngleCANID_BL, SwerveConstants.DriveCANID_BL, SwerveConstants.ABSENCPORTID_BL, SwerveConstants.ABSENCOFFSET_BL),
+            new SwerveModule(SwerveConstants.AngleCANID_BR, SwerveConstants.DriveCANID_BR, SwerveConstants.ABSENCPORTID_BR, SwerveConstants.ABSENCOFFSET_BR)
     };
 
     SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
@@ -63,7 +65,7 @@ public class SwerveSubsystem extends SubsystemBase {
     ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0, 0, 0);
 
     SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, GetRobotHeading(),
-            GetModulePositions(), new Pose2d(7.572, 4.025, new Rotation2d(0)));
+            GetModulePositions(), new Pose2d(7.572, 4.025, Rotation2d.kZero));
 
     Vision vision = new Vision("AACAM");
     
@@ -137,6 +139,11 @@ public class SwerveSubsystem extends SubsystemBase {
         return poseEstimator.getEstimatedPosition();
     }
 
+    public void SetRobotPose(Pose2d pose)
+    {
+        poseEstimator.resetPose(pose);
+    }
+
     
     void InitializeShortcutButtons()
     {
@@ -171,7 +178,7 @@ public class SwerveSubsystem extends SubsystemBase {
                         return alliance.isPresent() && alliance.get() == Alliance.Red;
                     }, this);
 
-            //PathfindingCommand.warmupCommand().schedule();
+            PathfindingCommand.warmupCommand().schedule();
 
         } catch (Exception ex) {
             Elastic.sendNotification(new Elastic.Notification(NotificationLevel.ERROR,
@@ -234,6 +241,17 @@ public class SwerveSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("RobotHeading", GetRobotHeading().getDegrees());
         SmartDashboard.putNumber("Odom Upd Elapsed", Math.floor((Timer.getFPGATimestamp() - lastPoseUpdate) * 100.0) / 100.0);
         
+        double[] moduleAngles = new double[4];
+        double[] moduleAbsEncAngles = new double[4];
+
+        for(int i = 0; i<4; i++)
+        {
+            moduleAngles[i] = modules[i].GetAngle().getDegrees();
+            moduleAbsEncAngles[i] = modules[i].GetAbsEncoderReading().getDegrees();
+        }
+
+        SmartDashboard.putNumberArray("ABS ENCODER", moduleAbsEncAngles);
+        SmartDashboard.putNumberArray("MODULE ANGLES", moduleAngles);
     }
 
 }

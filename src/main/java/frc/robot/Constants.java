@@ -39,8 +39,11 @@ public final class Constants {
         public static final double PIDF_D = 0;
         public static final double PIDF_F = 0.00021;
 
-        public static final double IntakeVelocity = -150;
-        public static final double OuttakeVelocity = -300;
+        public static final double MaxIntakeVelocity = -150;
+        public static final double AutoIntakeVelocity = -150;
+
+        public static final double MaxOuttakeVelocity = -500;
+        public static final double AutoOuttakeVelocity = -500;
 
         public static final double IntakeThresholdVelocity = 0; // abs Velocity < X RPM = Coral In
         public static final double OuttakeThresholdVelocity = 0; // abs Velocity > X RPM = Coral Out
@@ -57,14 +60,14 @@ public final class Constants {
         public static final double PID_I = 0;
         public static final double PID_D = 0;
 
-        public static final double TargetTolerance = 0.1;
+        public static final double TargetTolerance = 1;
         public static final double TargetTimeoutS = 0;
 
-        public static final double TARGET_CORALSTAT = 2;
+        public static final double TARGET_CORALSTAT = 0;//2;
         public static final double TARGET_REEFL1 = 0;
-        public static final double TARGET_REEFL2 = 0;
+        public static final double TARGET_REEFL2 = 7;
         public static final double TARGET_REEFL3 = 20;
-        public static final double TARGET_REEFL4 = 18;
+        public static final double TARGET_REEFL4 = 20;
 
     }
 
@@ -83,7 +86,7 @@ public final class Constants {
         public static final double FineAlignMaxDriveSpeed = 1; // m/s
         public static final double FineAlignMaxRotSpeed = 2 * Math.PI; // rad/s
 
-        public static final double MaxDriveSpeed = 2.5; // m/s
+        public static final double MaxDriveSpeed = 0.5; // m/s
         public static final double MaxDriveAccel = 5; // m/s^2
 
         public static final double MaxRotSpeed = Math.PI * 2 * 3; // rad/s
@@ -101,8 +104,8 @@ public final class Constants {
 
     public static class DriveConstants {
         
-        public static final double MaxDriveSpeed = 3; // m/s
-        public static final double MaxDriveAccel = 5; // m/s^2
+        public static final double MaxDriveSpeed = 1.5; // m/s
+        public static final double MaxDriveAccel = 4; // m/s^2
         public static final double MaxDriveDeccel = 8; // m/s^2
 
         public static final double MaxRotSpeed = Math.PI * 2 * 0.5; // rad/s
@@ -152,7 +155,11 @@ public final class Constants {
         public static final int ABSENCPORTID_FR = 2;
         public static final int ABSENCPORTID_BL = 3;
         public static final int ABSENCPORTID_BR = 4;
-        public static final boolean ABSENCODER_INVERTED = false;
+
+        public static final double ABSENCOFFSET_FL = 172;
+        public static final double ABSENCOFFSET_FR = 58.8;
+        public static final double ABSENCOFFSET_BL = 333.5;
+        public static final double ABSENCOFFSET_BR = 28.4;
         
 
 

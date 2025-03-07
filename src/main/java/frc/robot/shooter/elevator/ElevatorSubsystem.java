@@ -101,8 +101,8 @@ public class ElevatorSubsystem extends SubsystemBase  {
     private boolean AtTarget(double target)
     {
         double currentPos = encoder.getPosition();
-
-        return Math.abs(target-currentPos) < ElevatorConstants.TargetTolerance;
+        double diff = Math.abs(target-currentPos);
+        return diff < ElevatorConstants.TargetTolerance;
     }
 
     private void SetTarget(double target)

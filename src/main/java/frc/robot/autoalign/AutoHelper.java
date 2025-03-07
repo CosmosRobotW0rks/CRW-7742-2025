@@ -26,6 +26,7 @@ import frc.robot.autoalign.commands.FineAlignCommand;
 import frc.robot.drivetrain.SwerveSubsystem;
 import frc.robot.shooter.commands.TakeCoralCommand;
 import frc.robot.shooter.elevator.ElevatorSubsystem;
+import frc.robot.shooter.shooter.ShooterSubsystem;
 
 public class AutoHelper {
 
@@ -34,6 +35,7 @@ public class AutoHelper {
 
     private final SwerveSubsystem swerve;
     private final ElevatorSubsystem elevator;
+    private final ShooterSubsystem shooter;
 
     AprilTagFieldLayout apriltagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
@@ -43,10 +45,11 @@ public class AutoHelper {
             StructPublisher<Pose2d> offsetPosePub = NetworkTableInstance.getDefault()
                     .getStructTopic("OffsetPose", Pose2d.struct).publish();
 
-    public AutoHelper(SwerveSubsystem swerveSubsystem, ElevatorSubsystem elevatorSubsystem)
+    public AutoHelper(SwerveSubsystem swerveSubsystem, ElevatorSubsystem elevatorSubsystem, ShooterSubsystem shooter)
     {
         swerve = swerveSubsystem;
         elevator = elevatorSubsystem;
+        this.shooter = shooter;
 
     }
 
@@ -60,7 +63,7 @@ public class AutoHelper {
     {
         Translation2d target = GetCoralStationAlignPose(cs).getTranslation();
 
-        return Commands.defer(() -> AlignToCoralStation(cs).alongWith(WaitUntilNearPosition(target, 1).andThen(new TakeCoralCommand(elevator))), Set.of());
+        return Commands.defer(() -> AlignToCoralStation(cs).alongWith(WaitUntilNearPosition(target, 1).andThen(new TakeCoralCommand(elevator, shooter))), Set.of());
     }
 
     public Command AlignToReefSide(int sideIndex, ReefAlign ra)
@@ -135,6 +138,13 @@ public class AutoHelper {
         return new ExecuteWhenNearPosition(this, pos, tolerance, true);
     }
 
+    
+    public Command DriveToPose(Pose2d p2d, boolean allianceOriented)
+    {
+        return DriveToPose(p2d, allianceOriented, AutoConstants.MaxDriveSpeed, AutoConstants.MaxDriveAccel, AutoConstants.MaxRotSpeed, AutoConstants.MaxRotAccel);
+    }
+
+
 
     // Helper functions
 
@@ -196,16 +206,11 @@ public class AutoHelper {
         boolean flip = allianceOriented && IsRedAlliance();
         p2d = flip ? FlippingUtil.flipFieldPose(p2d) : p2d;
 
-        Command cmd = AutoBuilder.pathfindToPose(p2d, constraints).finallyDo(() -> swerve.Stop()).andThen(new FineAlignCommand(swerve, p2d));
+        Command cmd = AutoBuilder.pathfindToPose(p2d, constraints);//.finallyDo(() -> swerve.Stop()).andThen(new FineAlignCommand(swerve, p2d));
 
         cmd.addRequirements(swerve);
 
         return cmd;
-    }
-
-    private Command DriveToPose(Pose2d p2d, boolean allianceOriented)
-    {
-        return DriveToPose(p2d, allianceOriented, AutoConstants.MaxDriveSpeed, AutoConstants.MaxDriveAccel, AutoConstants.MaxRotSpeed, AutoConstants.MaxRotAccel);
     }
 
 
