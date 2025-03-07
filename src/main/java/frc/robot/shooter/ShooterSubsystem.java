@@ -1,4 +1,4 @@
-package frc.robot.shooter.shooter;
+package frc.robot.shooter;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.shooter.elevator.commands.ElevatorGoToCommand;
 
 
 public class ShooterSubsystem extends SubsystemBase  {

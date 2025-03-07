@@ -28,12 +28,8 @@ import frc.robot.autoalign.AutoHelper.CoralStation;
 import frc.robot.autoalign.AutoHelper.ReefAlign;
 import frc.robot.drivetrain.SwerveSubsystem;
 import frc.robot.drivetrain.commands.SwerveJoystickDriveCommand;
-import frc.robot.shooter.commands.TakeCoralCommand;
-import frc.robot.shooter.elevator.ElevatorSubsystem;
-import frc.robot.shooter.elevator.ElevatorTarget;
-import frc.robot.shooter.elevator.ElevatorTargetSwitchSubsystem;
-import frc.robot.shooter.shooter.ShooterSubsystem;
-import frc.robot.shooter.shooter.ShooterSubsystem.ShooterMode;
+import frc.robot.shooter.ShooterSubsystem;
+import frc.robot.shooter.ShooterSubsystem.ShooterMode;
 import frc.robot.util.FixAllianceStartPose;
 
 public class RobotContainer {
@@ -43,9 +39,6 @@ public class RobotContainer {
 
   private final SwerveSubsystem swerveSubsystem;
 
-  private final ElevatorSubsystem elevatorSubsystem;
-  private final ElevatorTargetSwitchSubsystem elevatorTargetSwitchSubsystem;
-
   private final ShooterSubsystem shooterSubsystem;
 
   private final Supplier<Double> drivetrainSpeedCoeffSupplier;
@@ -54,11 +47,9 @@ public class RobotContainer {
 
   public RobotContainer() {
     swerveSubsystem = new SwerveSubsystem();
-    elevatorSubsystem = new ElevatorSubsystem();
-    elevatorTargetSwitchSubsystem = new ElevatorTargetSwitchSubsystem();
     shooterSubsystem = new ShooterSubsystem();
 
-    autoHelper = new AutoHelper(swerveSubsystem, elevatorSubsystem, shooterSubsystem);
+    autoHelper = new AutoHelper(swerveSubsystem, shooterSubsystem);
 
     drivetrainSpeedCoeffSupplier = () -> CM == ControlMode.CM_CLIMB ? ClimbConstants.drivetrainSpeedCoeff : 1;
 
@@ -77,6 +68,7 @@ public class RobotContainer {
       true
     ));
 
+    configureClimbBindings();
     configureIntakeBindings();
     configureReefBindings();
   }
@@ -91,8 +83,6 @@ public class RobotContainer {
     // Normal control mode
     //controller.leftTrigger().and(CM_IsDefault).whileTrue(autoHelper.AlignAndTakeCoral(CoralStation.Left));
     //controller.rightTrigger().and(CM_IsDefault).whileTrue(autoHelper.AlignAndTakeCoral(CoralStation.Right));
-    controller.y().and(CM_IsDefault).whileTrue(Commands.defer(() -> new TakeCoralCommand(elevatorSubsystem, shooterSubsystem), Set.of()));
-
     //controller.x().toggleOnTrue(Commands.run(() -> shooterSubsystem.SetMode(ShooterMode.OUTTAKE)).finallyDo(() -> shooterSubsystem.SetMode(ShooterMode.IDLE)));
 
 
@@ -100,29 +90,7 @@ public class RobotContainer {
 
   private void configureReefBindings()
   {
-    //controller.x().and(CM_IsDefault).toggleOnTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Left, 2), Set.of()));
-    //controller.b().and(CM_IsDefault).toggleOnTrue(Commands.defer(() -> autoHelper.AlignToClosestReefSide(ReefAlign.Right, 2), Set.of()));
-
-    controller.leftBumper().and(CM_IsDefault).onTrue(Commands.runOnce(() -> elevatorTargetSwitchSubsystem.DecreaseTarget()));
-    controller.rightBumper().and(CM_IsDefault).onTrue(Commands.runOnce(() -> elevatorTargetSwitchSubsystem.IncreaseTarget()));
-
-
-    Command ascendToReefCommand = Commands.defer(() -> elevatorSubsystem.GoToCommand(elevatorTargetSwitchSubsystem.GetTarget(true)).finallyDo((interrupted) -> {
-
-      if(interrupted)
-      elevatorSubsystem.SetTarget(ElevatorTarget.IDLE);
-
-    }), Set.of());
-
-    controller.a().and(CM_IsDefault).and(() -> elevatorTargetSwitchSubsystem.GetTarget(false) != null).toggleOnTrue(ascendToReefCommand);
-
-    
-    controller.a().and(CM_IsDefault)
-    .and(() -> 
-    elevatorSubsystem.AtTarget(elevatorSubsystem.GetTarget()) && 
-    elevatorSubsystem.GetTarget().IsReefTarget() &&
-    elevatorTargetSwitchSubsystem.GetTarget(false) == null)
-     .whileTrue(shooterSubsystem.ShootCommand().finallyDo(() -> elevatorSubsystem.SetTarget(ElevatorTarget.IDLE)));
+  
      
   }
 

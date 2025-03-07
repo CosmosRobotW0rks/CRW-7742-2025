@@ -12,8 +12,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.drivetrain.SwerveSubsystem;
-import frc.robot.shooter.elevator.ElevatorSubsystem;
-import frc.robot.shooter.elevator.ElevatorTarget;
 import frc.robot.util.Elastic;
 
 public class FixAllianceStartPose extends Command {

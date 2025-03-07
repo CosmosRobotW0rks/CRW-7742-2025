@@ -24,9 +24,7 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.autoalign.commands.ExecuteWhenNearPosition;
 import frc.robot.autoalign.commands.FineAlignCommand;
 import frc.robot.drivetrain.SwerveSubsystem;
-import frc.robot.shooter.commands.TakeCoralCommand;
-import frc.robot.shooter.elevator.ElevatorSubsystem;
-import frc.robot.shooter.shooter.ShooterSubsystem;
+import frc.robot.shooter.ShooterSubsystem;
 
 public class AutoHelper {
 
@@ -34,7 +32,6 @@ public class AutoHelper {
     final int[] redReefAprTagIDs = { 10,9,8,7,6,11 };
 
     private final SwerveSubsystem swerve;
-    private final ElevatorSubsystem elevator;
     private final ShooterSubsystem shooter;
 
     AprilTagFieldLayout apriltagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
@@ -45,10 +42,9 @@ public class AutoHelper {
             StructPublisher<Pose2d> offsetPosePub = NetworkTableInstance.getDefault()
                     .getStructTopic("OffsetPose", Pose2d.struct).publish();
 
-    public AutoHelper(SwerveSubsystem swerveSubsystem, ElevatorSubsystem elevatorSubsystem, ShooterSubsystem shooter)
+    public AutoHelper(SwerveSubsystem swerveSubsystem, ShooterSubsystem shooter)
     {
         swerve = swerveSubsystem;
-        elevator = elevatorSubsystem;
         this.shooter = shooter;
 
     }
@@ -59,12 +55,15 @@ public class AutoHelper {
         return DriveToPose(target, true);
     }
 
+    // TODO: replace with new intake command
+    /*
     public Command AlignAndTakeCoral(CoralStation cs)
     {
         Translation2d target = GetCoralStationAlignPose(cs).getTranslation();
 
         return Commands.defer(() -> AlignToCoralStation(cs).alongWith(WaitUntilNearPosition(target, 1).andThen(new TakeCoralCommand(elevator, shooter))), Set.of());
     }
+        */
 
     public Command AlignToReefSide(int sideIndex, ReefAlign ra)
     {
