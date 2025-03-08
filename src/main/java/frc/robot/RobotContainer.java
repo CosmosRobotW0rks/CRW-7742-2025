@@ -26,6 +26,7 @@ import frc.robot.Constants.ClimbConstants;
 import frc.robot.autoalign.AutoHelper;
 import frc.robot.autoalign.AutoHelper.CoralStation;
 import frc.robot.autoalign.AutoHelper.ReefAlign;
+import frc.robot.climb.ClimbSubsystem;
 import frc.robot.drivetrain.SwerveSubsystem;
 import frc.robot.drivetrain.commands.SwerveJoystickDriveCommand;
 import frc.robot.shooter.ShooterSubsystem;
@@ -41,6 +42,8 @@ public class RobotContainer {
 
   private final ShooterSubsystem shooterSubsystem;
 
+  private final ClimbSubsystem climbSubsystem;
+
   private final Supplier<Double> drivetrainSpeedCoeffSupplier;
 
   public ControlMode CM = ControlMode.CM_DEFAULT;
@@ -48,6 +51,7 @@ public class RobotContainer {
   public RobotContainer() {
     swerveSubsystem = new SwerveSubsystem();
     shooterSubsystem = new ShooterSubsystem();
+    climbSubsystem = new ClimbSubsystem();
 
     autoHelper = new AutoHelper(swerveSubsystem, shooterSubsystem);
 
@@ -75,7 +79,7 @@ public class RobotContainer {
 
   private void configureClimbBindings()
   {
-    
+    controller.x().onTrue(climbSubsystem.ToggleClimbCommand());
   }
 
   private void configureIntakeBindings()
@@ -90,8 +94,7 @@ public class RobotContainer {
 
   private void configureReefBindings()
   {
-  
-     
+    controller.a().whileTrue(shooterSubsystem.ShootCommand());   
   }
 
 

@@ -231,7 +231,7 @@ public class SwerveSubsystem extends SubsystemBase {
             }
 
             estimatedRobotHeadingRad += chassisSpeeds.omegaRadiansPerSecond * 0.02;
-            estimatedRobotHeadingRad %= 2*Math.PI;
+            estimatedRobotHeadingRad %= 2*Math.PI; 
         }
         
         UpdatePoseEstimation();

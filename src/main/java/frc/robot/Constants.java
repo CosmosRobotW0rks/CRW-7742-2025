@@ -22,7 +22,7 @@ public final class Constants {
     }
 
     public static class ClimbConstants {
-        public static final int PCM_CANID = 123;
+        public static final int PCM_CANID = 8;
 
         public static final int SolenoidChannel = 0;
 
@@ -32,7 +32,7 @@ public final class Constants {
 
     public static class ShooterConstants {
         
-        public static final int CANID = 11;
+        public static final int CANID = 10;
 
         public static final double PIDF_P = 0.00001;
         public static final double PIDF_I = 0;
@@ -42,8 +42,8 @@ public final class Constants {
         public static final double MaxIntakeVelocity = -150;
         public static final double AutoIntakeVelocity = -150;
 
-        public static final double MaxOuttakeVelocity = -500;
-        public static final double AutoOuttakeVelocity = -500;
+        public static final double MaxOuttakeVelocity = 500;
+        public static final double AutoOuttakeVelocity = 500;
 
         public static final double IntakeThresholdVelocity = 0; // abs Velocity < X RPM = Coral In
         public static final double OuttakeThresholdVelocity = 0; // abs Velocity > X RPM = Coral Out
