@@ -39,6 +39,8 @@ import frc.robot.util.Elastic.Notification.NotificationLevel;
 // NWU COORDINATES!!!!
 public class SwerveSubsystem extends SubsystemBase {
 
+    public static final Rotation2d RobotStartAngle = Rotation2d.kCCW_90deg;
+
     StructArrayPublisher<SwerveModuleState> swerveStatePublisher = NetworkTableInstance.getDefault()
             .getStructArrayTopic("SwerveStates", SwerveModuleState.struct).publish();
     StructPublisher<Pose2d> posePublisher = NetworkTableInstance.getDefault()
@@ -65,7 +67,7 @@ public class SwerveSubsystem extends SubsystemBase {
     ChassisSpeeds chassisSpeeds = new ChassisSpeeds(0, 0, 0);
 
     SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, GetRobotHeading(),
-            GetModulePositions(), new Pose2d(7.572, 4.025, Rotation2d.kZero));
+            GetModulePositions(), new Pose2d(7.572, 4.025, RobotStartAngle));
 
     Vision vision = new Vision("AACAM");
     
@@ -116,7 +118,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public Rotation2d GetRobotHeading() {
-        return Robot.isSimulation() ? Rotation2d.fromRadians(estimatedRobotHeadingRad) : Rotation2d.fromDegrees(360.0 - gyro.getFusedHeading());
+        return Robot.isSimulation() ? Rotation2d.fromRadians(estimatedRobotHeadingRad) : Rotation2d.fromDegrees(360.0 - gyro.getFusedHeading() + RobotStartAngle.getDegrees());
     }
 
     public SwerveModuleState[] GetModuleStates() {
@@ -246,8 +248,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
         for(int i = 0; i<4; i++)
         {
-            moduleAngles[i] = modules[i].GetAngle().getDegrees();
-            moduleAbsEncAngles[i] = modules[i].GetAbsEncoderReading().getDegrees();
+            moduleAngles[i] = (double)(int)(modules[i].GetAngle().getDegrees() * 100.0) / 100.0;
+            moduleAbsEncAngles[i] = (double)(int)(modules[i].GetAbsEncoderReading().getDegrees() * 100.0) / 100.0;
         }
 
         SmartDashboard.putNumberArray("ABS ENCODER", moduleAbsEncAngles);

@@ -72,7 +72,7 @@ public class ShooterSubsystem extends SubsystemBase  {
 
     public Command IntakeCommand()
     {
-        return new Command() {
+        Command cmd = new Command() {
             
             @Override
             public void initialize() {
@@ -89,11 +89,15 @@ public class ShooterSubsystem extends SubsystemBase  {
                 SetMode(ShooterMode.IDLE);
             }
         };
+
+        cmd.addRequirements(this);
+
+        return cmd;
     }
 
     public Command ShootCommand()
     {
-        return new Command() {
+        Command cmd = new Command() {
             
             @Override
             public void initialize() {
@@ -112,6 +116,10 @@ public class ShooterSubsystem extends SubsystemBase  {
                 System.out.printf("SHOOT COMMAND END // Interrupted: %d\n", interrupted ? 1 : 0);
             }
         };
+
+        cmd.addRequirements(this);
+
+        return cmd;
     }
 
     @Override
@@ -134,7 +142,7 @@ public class ShooterSubsystem extends SubsystemBase  {
 
     private void IntakePeriodic()
     {
-        controller.setReference(ShooterConstants.MaxIntakeVelocity, ControlType.kVelocity);
+        controller.setReference(ShooterConstants.IntakeVelocity, ControlType.kVelocity);
 
         /*
         if(Math.abs(encoder.getVelocity()) < ShooterConstants.IntakeThresholdVelocity)
@@ -147,7 +155,7 @@ public class ShooterSubsystem extends SubsystemBase  {
 
     private void OuttakePeriodic()
     {
-        controller.setReference(ShooterConstants.MaxOuttakeVelocity, ControlType.kVelocity);
+        controller.setReference(ShooterConstants.OuttakeVelocity, ControlType.kVelocity);
 /* 
         if(Math.abs(encoder.getVelocity()) > ShooterConstants.OuttakeThresholdVelocity)
         {

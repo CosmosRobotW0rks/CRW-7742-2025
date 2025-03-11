@@ -22,19 +22,10 @@ public class ClimbSubsystem extends SubsystemBase  {
     public ClimbSubsystem()
     {
         compressor = new Compressor(ClimbConstants.PCM_CANID, PneumaticsModuleType.CTREPCM);
-        solenoid = new Solenoid(ClimbConstants.PCM_CANID, PneumaticsModuleType.CTREPCM, ClimbConstants.SolenoidChannel);    
-    }
-
-    @Override
-    public void periodic() {
-        boolean atFullPressure = compressor.getPressureSwitchValue();
-
-        SmartDashboard.putBoolean("At full pressure", atFullPressure);
-
-        if(!atFullPressure) compressor.enableDigital();
-        else compressor.disable();
-
-        solenoid.set(climbState);
+        solenoid = new Solenoid(ClimbConstants.PCM_CANID, PneumaticsModuleType.CTREPCM, ClimbConstants.SolenoidChannel);
+        
+        compressor.enableDigital();
+        SetClimb(true);
     }
 
     public boolean GetClimb()
@@ -45,6 +36,7 @@ public class ClimbSubsystem extends SubsystemBase  {
 
     public void SetClimb(boolean state)
     {
+        solenoid.set(!climbState);
         climbState = state;
     }
     

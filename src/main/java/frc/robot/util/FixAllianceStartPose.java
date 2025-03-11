@@ -26,7 +26,7 @@ public class FixAllianceStartPose extends Command {
     @Override
     public void initialize() {
         
-        Pose2d blueStartPose = new Pose2d(7.572, 4.025, Rotation2d.kZero);
+        Pose2d blueStartPose = new Pose2d(7.572, 4.025, SwerveSubsystem.RobotStartAngle);
         Pose2d redStartPose = FlippingUtil.flipFieldPose(blueStartPose);
 
         Optional<Alliance> alliance = DriverStation.getAlliance();

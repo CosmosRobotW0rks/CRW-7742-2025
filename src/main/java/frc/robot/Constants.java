@@ -27,7 +27,7 @@ public final class Constants {
         public static final int SolenoidChannel = 0;
 
         
-        public static final double drivetrainSpeedCoeff = 1/3;
+        public static final double drivetrainSpeedCoeff = 1.0/5.0;
     }
 
     public static class ShooterConstants {
@@ -39,11 +39,9 @@ public final class Constants {
         public static final double PIDF_D = 0;
         public static final double PIDF_F = 0.00021;
 
-        public static final double MaxIntakeVelocity = -150;
-        public static final double AutoIntakeVelocity = -150;
+        public static final double IntakeVelocity = -150;
 
-        public static final double MaxOuttakeVelocity = 500;
-        public static final double AutoOuttakeVelocity = 500;
+        public static final double OuttakeVelocity = 500;
 
         public static final double IntakeThresholdVelocity = 0; // abs Velocity < X RPM = Coral In
         public static final double OuttakeThresholdVelocity = 0; // abs Velocity > X RPM = Coral Out
@@ -103,6 +101,8 @@ public final class Constants {
     }
 
     public static class DriveConstants {
+
+        public static final double FastModeMaxCoeff = 2;
         
         public static final double MaxDriveSpeed = 1.5; // m/s
         public static final double MaxDriveAccel = 4; // m/s^2
@@ -151,15 +151,15 @@ public final class Constants {
         public static final int AngleCANID_BR = 7;
         public static final int DriveCANID_BR = 9;
 
-        public static final int ABSENCPORTID_FL = 1;
+        public static final int ABSENCPORTID_FL = 0;
         public static final int ABSENCPORTID_FR = 2;
-        public static final int ABSENCPORTID_BL = 3;
-        public static final int ABSENCPORTID_BR = 4;
+        public static final int ABSENCPORTID_BL = 1;
+        public static final int ABSENCPORTID_BR = 3;
 
-        public static final double ABSENCOFFSET_FL = 172;
-        public static final double ABSENCOFFSET_FR = 58.8;
-        public static final double ABSENCOFFSET_BL = 333.5;
-        public static final double ABSENCOFFSET_BR = 28.4;
+        public static final double ABSENCOFFSET_FL = 194 + 180.0;
+        public static final double ABSENCOFFSET_FR = 146.5 + 180.0;
+        public static final double ABSENCOFFSET_BL = 356.3 + 180.0;
+        public static final double ABSENCOFFSET_BR = 245.5 + 180.0;
         
 
 

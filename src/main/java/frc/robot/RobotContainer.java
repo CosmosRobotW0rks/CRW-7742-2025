@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.ClimbConstants;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.autoalign.AutoHelper;
 import frc.robot.autoalign.AutoHelper.CoralStation;
 import frc.robot.autoalign.AutoHelper.ReefAlign;
@@ -55,7 +56,7 @@ public class RobotContainer {
 
     autoHelper = new AutoHelper(swerveSubsystem, shooterSubsystem);
 
-    drivetrainSpeedCoeffSupplier = () -> CM == ControlMode.CM_CLIMB ? ClimbConstants.drivetrainSpeedCoeff : 1;
+    drivetrainSpeedCoeffSupplier = () -> CM == ControlMode.CM_CLIMB ? ClimbConstants.drivetrainSpeedCoeff : 1.0 + (controller.getRightTriggerAxis() * (DriveConstants.FastModeMaxCoeff-1.0));
 
     configureBindings();
   }
@@ -73,27 +74,21 @@ public class RobotContainer {
     ));
 
     configureClimbBindings();
-    configureIntakeBindings();
-    configureReefBindings();
+    configureShooterBindings();
   }
 
   private void configureClimbBindings()
   {
+    controller.y().onTrue(Commands.runOnce(() -> CM = CM == ControlMode.CM_CLIMB ? ControlMode.CM_DEFAULT : ControlMode.CM_CLIMB));
     controller.x().onTrue(climbSubsystem.ToggleClimbCommand());
+    controller.leftBumper().onTrue(climbSubsystem.SetClimbCommand(false));
+    controller.rightBumper().onTrue(climbSubsystem.SetClimbCommand(true));
   }
 
-  private void configureIntakeBindings()
+
+  private void configureShooterBindings()
   {
-    // Normal control mode
-    //controller.leftTrigger().and(CM_IsDefault).whileTrue(autoHelper.AlignAndTakeCoral(CoralStation.Left));
-    //controller.rightTrigger().and(CM_IsDefault).whileTrue(autoHelper.AlignAndTakeCoral(CoralStation.Right));
-    //controller.x().toggleOnTrue(Commands.run(() -> shooterSubsystem.SetMode(ShooterMode.OUTTAKE)).finallyDo(() -> shooterSubsystem.SetMode(ShooterMode.IDLE)));
-
-
-  }
-
-  private void configureReefBindings()
-  {
+    shooterSubsystem.setDefaultCommand(shooterSubsystem.IntakeCommand());
     controller.a().whileTrue(shooterSubsystem.ShootCommand());   
   }
 
@@ -103,7 +98,7 @@ public class RobotContainer {
 
     Pose2d pose = swerveSubsystem.GetRobotPose();
 
-    Pose2d targetPose = new Pose2d(5.036, 4.025, Rotation2d.kZero);
+    Pose2d targetPose = new Pose2d(5.036, 4.025, SwerveSubsystem.RobotStartAngle);
 
 
       Pose2d allianceOrientedPose = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red ? FlippingUtil.flipFieldPose(targetPose) : targetPose;

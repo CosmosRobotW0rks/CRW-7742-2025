@@ -113,9 +113,9 @@ public class SwerveJoystickDriveCommand extends Command {
 
         double[] targetSpeeds = new double[]
         {
-            -y * DriveConstants.MaxDriveSpeed * suppCoeff.get(),
-            -x * DriveConstants.MaxDriveSpeed * suppCoeff.get(),
-            -rot * DriveConstants.MaxRotSpeed * suppCoeff.get()
+            -y * DriveConstants.MaxDriveSpeed,
+            -x * DriveConstants.MaxDriveSpeed,
+            -rot * DriveConstants.MaxRotSpeed
         };
 
 
@@ -131,7 +131,7 @@ public class SwerveJoystickDriveCommand extends Command {
         yZero = targetSpeeds[1] == 0;
         rotZero = targetSpeeds[2] == 0;
 
-        ChassisSpeeds cs = new ChassisSpeeds(targetSpeeds[0],targetSpeeds[1],targetSpeeds[2]);
+        ChassisSpeeds cs = new ChassisSpeeds(targetSpeeds[0] * suppCoeff.get() ,targetSpeeds[1] * suppCoeff.get(),targetSpeeds[2] * suppCoeff.get());
 
         swerve.SetFieldOrientedChassisSpeeds(cs);
 

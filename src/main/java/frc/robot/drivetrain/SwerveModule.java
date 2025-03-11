@@ -181,7 +181,7 @@ public class SwerveModule {
 
         double moduleAngleRad = absEnc.getRadians() - offset.getRadians();
 
-        //angleEncoder.setPosition(moduleAngleRad);
+        angleEncoder.setPosition(moduleAngleRad);
     }
 
     public Rotation2d GetAbsEncoderReading()
